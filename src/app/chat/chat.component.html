@@ -1,0 +1,51 @@
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-md-12 text-right">
+            Welcome , {{loginUsername}} <button type="button" class="btn btn-primary" (click)="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <ul class="list-group" *ngFor="let userData of userList">
+                <li class="list-group-item userList" *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
+                    {{userData.name}}</li>
+            </ul>
+        </div>
+        <div class="col-md-8">
+            <div class="row chatHeader">
+                <div class="col-md-12">
+                    <ul class="list-group">
+                        <li class="list-group-item active">{{selectedUser}}</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row chatMessage">
+                <div class="col-md-12">
+                    <h4>Chat Messages</h4>
+                    <div *ngFor="let ChatMessages of messages">
+                        {{ChatMessages}}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <form [formGroup]="chatForm" (ngSubmit)="sendMessage(chatForm)">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="text" formControlName="message" class="form-control inputMsg">
+                                <input type="hidden" formControlName="from_user_id">
+                                <input type="hidden" formControlName="from_user_name">
+                                <input type="hidden" formControlName="to_user_id">
+                                <input type="hidden" formControlName="to_user_name">
+                                <input type="text" formControlName="socket_id">
+                                
+                            </div>
+                            <div class="col-md-4"><button type="submit" class="btn btn-primary"
+                                    [disabled]="chatForm.invalid">Send</button></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
