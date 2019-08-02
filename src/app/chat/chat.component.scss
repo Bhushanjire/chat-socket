@@ -14,6 +14,14 @@
     height: 300px;
     overflow: auto;
 }
+
+.activeUser{
+    left: 50px;
+    bottom: 18px;
+    font-size: 9px;
+    
+}
+
 .userList{
     cursor: pointer;
 }
@@ -52,15 +60,19 @@ li {
 .dot {
     height: 10px;
     width: 10px;
-    background-color:green;
+    background-color: #25D366;
     border-radius: 50%;
     display: inline-block;
+    position: absolute;
+    z-index: 999;
+    margin-top: 22px;
   }
   .avatar {
     vertical-align: middle;
     width: 35px;
     height: 35px;
     border-radius: 50%;
+    position: relative;
   }
   .checkmark {
     display:inline-block;

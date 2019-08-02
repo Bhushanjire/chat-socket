@@ -20,7 +20,6 @@ export class SigninComponent implements OnInit {
   }
 
   signin(data){
-    //console.log(data.value);
     this.chatService.signinService(data.value).subscribe(responce=>{
       if(responce.success==true){   
         localStorage.setItem('user_id',responce.data[0].user_id);

@@ -28,6 +28,5 @@ export class SignupComponent implements OnInit {
         this.router.navigate(['/signup']);
       }
     });
-    console.log("signup",data.value);
   }
 }

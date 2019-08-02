@@ -11,12 +11,8 @@ export class AppComponent {
   title = 'chatApp';
   constructor(private route : Router, private chatService: ChatService){}
   ngOnInit(){
-    //this.route.navigate(['signin']);
     if(localStorage.getItem('user_id')){
-      
       this.route.navigate(['chat']);
-
-     // this.route.navigate(['signup']);
     }else{
       this.route.navigate(['signup']);
     }
