@@ -25,21 +25,19 @@ export class ChatService {
     this.initConnection();
     this.getAllUsers();
     this.getUpdatedUsers();
-    
-
   }
 
-  getAllUsers(){
+  getAllUsers() {
     this.socket.emit("getAllUsers");
   }
-getUpdatedUsers(){
-  this.socket.on('users-list', (message) => {
-    this.updatedUsers.next(message);
-  });
-}
-  
+  getUpdatedUsers() {
+    this.socket.on('users-list', (message) => {
+      this.updatedUsers.next(message);
+    });
+  }
 
-  initConnection(){
+
+  initConnection() {
     this.socket.on('connect', () => {
       console.log("socketID", this.socket.id); // 'G5p5...'
       this.socketID = this.socket.id;
@@ -47,7 +45,7 @@ getUpdatedUsers(){
       console.log(this.socket.connected); // true
       console.log(this.socket.disconnected); // false
       this.isLoggedIn.next(true);
-      
+
     });
   }
 
@@ -70,9 +68,7 @@ getUpdatedUsers(){
   }
   public sendMessageService(message) {
     console.log("senddata", message);
-    message.user_socket_id=this.socketID;
-    
-    
+    message.from_socket_id = this.socketID;
     this.socket.emit('new-message', message);
   }
 
@@ -92,8 +88,32 @@ getUpdatedUsers(){
       "socket_id": this.socketID
     }
     console.log("############", postData);
-
     return this.httpclient.post(this.APIPATH + "addSocketId", postData).pipe(map((res: any) => res));
+  }
+
+  logoutService() {
+    let postData = {
+      "user_id": localStorage.getItem('user_id')
+    }
+    this.socket.emit("disconnectUser", postData);
+    this.getAllUsers();
+  }
+
+  public getChatMessageService(to_user_id) {
+    let postData = {
+      "from_user_id": localStorage.getItem('user_id'),
+      "to_user_id": to_user_id
+    }
+    this.socket.emit("getChatMessages", postData);
+
+  }
+
+  setChatMessages() {
+    return Observable.create((observer) => {
+      this.socket.on('getChatMessages', (responce) => {
+        observer.next(responce);
+      });
+    });
   }
 
 }

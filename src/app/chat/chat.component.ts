@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ChatService } from '../chat.service';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import * as io from 'socket.io-client';
 
 @Component({
   selector: 'app-chat',
@@ -12,13 +11,16 @@ import * as io from 'socket.io-client';
 export class ChatComponent implements OnInit {
   chatForm: FormGroup;
   userList = [];
-  messages: string[] = [];
+  messages:any;
   selectedUser = "Select contact";
   loginUser: any;
   loginUsername: string;
-  private url = 'http://localhost:3000';
+  chatFormDiv=false;
+  chatMessageDiv =false;
+  noOnlineUser =false;
+  profile_picture = "";
+  chat_profile_picture=false;
 
-  private socket;
   constructor(private chatService: ChatService, private route: Router) { }
 
   ngOnInit() {
@@ -27,15 +29,13 @@ export class ChatComponent implements OnInit {
       if (res) {
         this.chatService.updateSocketIdService().subscribe(responce => {
           console.log(responce);
+          this.chatService.getAllUsers();
         });
       }
-
     })
-
-    // this.httpclient.post(this.APIPATH + "addSocketId", postData).pipe(map((res: any) => res));
-
     this.loginUser = localStorage.getItem('user_id');
     this.loginUsername = localStorage.getItem('user_name');
+    this.profile_picture = localStorage.getItem('profile_picture');
     this.chatForm = new FormGroup({
       "message": new FormControl(null, Validators.required),
       "from_user_id": new FormControl(null, Validators.required),
@@ -48,29 +48,33 @@ export class ChatComponent implements OnInit {
     this.chatService.getMessages().subscribe((message: string) => {
       console.log("message~~~~~~~~~~~~~~~~~~~", message); 
       this.messages.push(message);
+      //this.messages.push(message);
     });
+    this.chatService.setChatMessages().subscribe((responce : any)=>{
+      this.messages = responce;
+    });
+
     this.chatService.updatedUsers.subscribe((res) => {
-      console.log(res);
-      this.userList = res;
+      console.log("Total User=>",res);
+      if(res.length>1){
+        this.userList = res;
+        this.chatMessageDiv=true;
+        this.noOnlineUser=false;
+      }else{
+        this.chatMessageDiv=false;
+        this.noOnlineUser=true;
+      }
     })
-
-    // this.getUserList();
   }
-  // getUserList() {
-  //   this.chatService.getUserService().subscribe(responce => {
-  //     if (responce.success == true) {
-  //       this.userList = responce.data;
-  //     }
-  //   });
 
-  // }
   getUser(userData) {
     // console.log(userData);
     // this.getUserList();
+    //userData.active=true;
+    this.chatFormDiv=true;
     this.selectedUser = userData.name;
     this.chatService.getAllUsers();
     userData = this.userList.filter((user) => user.user_id === userData.user_id);
-    
     
     this.chatForm.patchValue({
       "from_user_id": localStorage.getItem('user_id'),
@@ -79,14 +83,17 @@ export class ChatComponent implements OnInit {
       "to_user_name": userData[0].name,
       "socket_id": userData[0].socket_id
     });
+    this.chat_profile_picture=userData[0].profile_picture;
+    this.chatService.getChatMessageService(userData[0].user_id);
   }
   sendMessage(data) {
     console.log(data.value);
     let sendData = {
-      "id": data.value.to_user_id,
-      "name": data.value.to_user_name,
-      "chatMsg": data.value.message,
-      "user_id": localStorage.getItem('user_id'),
+      "to_user_id": data.value.to_user_id,
+      "to_user_name": data.value.to_user_name,
+      "message": data.value.message,
+      "from_user_id": localStorage.getItem('user_id'),
+      "from_user_name": localStorage.getItem('user_name'),
       "to_socket_id": data.value.socket_id
     };
     console.log("&&&&&&&&",sendData);
@@ -98,6 +105,7 @@ export class ChatComponent implements OnInit {
     //this.chatForm.reset();
   }
   logout() {
+    this.chatService.logoutService();
     localStorage.clear();
     this.route.navigate(['/signin']);
   }

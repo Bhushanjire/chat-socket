@@ -4,7 +4,8 @@ const User = function(task){
 };
 
 User.createUserModel=function(p,result){
-   const sql = "INSERT INTO users(name,username,password) VALUES('"+p.name+"','"+p.username+"','"+p.password+"')";
+  let profile_picture = "https://picsum.photos/id/"+Math.ceil(Math.random()*100)+"/500/500";
+   const sql = "INSERT INTO users(name,username,password,profile_picture) VALUES('"+p.name+"','"+p.username+"','"+p.password+"','"+profile_picture+"')";
     connection.query(sql,function(err,res){
      return  err ? result(err, null) :  result(null, res.insertId);  
     });

@@ -1,33 +1,79 @@
 <div class="container">
     <div class="row mb-3">
-        <div class="col-md-12 text-right">
+        <div class="col-md-6">
+            <h3>Rapidera Chat Application</h3>
+        </div>
+        <div class="col-md-6 text-right">
             Welcome , {{loginUsername}} <button type="button" class="btn btn-primary" (click)="logout()">Logout</button>
         </div>
     </div>
-    <div class="row">
+    <div class="row text-center" *ngIf="noOnlineUser">
+        <div class="col-md-12">
+            <a class="btn btn-info">
+                <h3>No Online User</h3>
+            </a></div>
+    </div>
+    <div class="row" *ngIf="chatMessageDiv">
         <div class="col-md-4">
-            <ul class="list-group" *ngFor="let userData of userList">
-                <li class="list-group-item userList" *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
-                    {{userData.name}}</li>
+            <ul class="list-group" *ngFor="let userData of userList;let i = index ">
+                <li class="list-group-item userList" [ngClass]="{'active':userData.active}"
+                    *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
+                    <span class="dot" *ngIf="userData.socket_id!=null"></span>
+                    <img src="{{userData.profile_picture}}" class="avatar profile-picture-list" alt="loginUsername"
+                        *ngIf="chat_profile_picture">
+                    &nbsp; {{userData.name}}
+                    <sub class="text-muted" *ngIf="userData.socket_id!=null">Active</sub>
+                    <!-- <small class="text-muted" *ngIf="userData.socket_id!=null">Active</small> -->
+                </li>
             </ul>
         </div>
         <div class="col-md-8">
             <div class="row chatHeader">
                 <div class="col-md-12">
-                    <ul class="list-group">
-                        <li class="list-group-item active">{{selectedUser}}</li>
+                    <ul class="list-group ">
+                        <li class="list-group-item header-list-item">
+                            <img src="{{chat_profile_picture}}" class="avatar profile-picture" alt="loginUsername"
+                                *ngIf="chat_profile_picture">&nbsp;&nbsp; {{selectedUser}}
+                            <span style="float: right">
+                                    <i class="fa fa-ellipsis-v handCursor" aria-hidden="true"></i>
+ 
+                                    <!-- <div class="btn-group">
+                                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                              Action
+                                            </button>
+                                            <div class="dropdown-menu">
+                                              <a class="dropdown-item" href="#">Action</a>
+                                              <a class="dropdown-item" href="#">Another action</a>
+                                              <a class="dropdown-item" href="#">Something else here</a>
+                                              <div class="dropdown-divider"></div>
+                                              <a class="dropdown-item" href="#">Separated link</a>
+                                            </div>
+                                        </div> -->
+                            </span>
+                            
+                            </li>
                     </ul>
                 </div>
             </div>
             <div class="row chatMessage">
                 <div class="col-md-12">
-                    <h4>Chat Messages</h4>
-                    <div *ngFor="let ChatMessages of messages">
-                        {{ChatMessages}}
+                        
+
+                    <div *ngFor="let ChatMessages of messages"
+                        [ngClass]="ChatMessages.from_user_id==loginUser ? 'from-message': 'to-message'">
+                        {{ChatMessages.message}} 
+                        <span class="text-muted"><small>{{ChatMessages.added_date_time}}</small></span>
+                        &nbsp;
+                        <span class="checkmark" *ngIf="ChatMessages.from_user_id!=loginUser">
+                                <div class="checkmark_circle"></div>
+                                <div class="checkmark_stem"></div>
+                                <div class="checkmark_kick"></div>
+                            </span>
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row mt-3" *ngIf="chatFormDiv">
+                   
                 <div class="col-md-12">
                     <form [formGroup]="chatForm" (ngSubmit)="sendMessage(chatForm)">
                         <div class="row">
@@ -37,8 +83,7 @@
                                 <input type="hidden" formControlName="from_user_name">
                                 <input type="hidden" formControlName="to_user_id">
                                 <input type="hidden" formControlName="to_user_name">
-                                <input type="text" formControlName="socket_id">
-                                
+                                <input type="hidden" formControlName="socket_id">
                             </div>
                             <div class="col-md-4"><button type="submit" class="btn btn-primary"
                                     [disabled]="chatForm.invalid">Send</button></div>

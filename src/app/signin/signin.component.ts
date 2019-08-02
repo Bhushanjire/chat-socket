@@ -25,6 +25,7 @@ export class SigninComponent implements OnInit {
       if(responce.success==true){   
         localStorage.setItem('user_id',responce.data[0].user_id);
         localStorage.setItem('user_name',responce.data[0].name);
+        localStorage.setItem('profile_picture',responce.data[0].profile_picture);
         this.route.navigate(['chat']);
       }else{
 

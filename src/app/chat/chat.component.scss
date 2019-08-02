@@ -3,11 +3,101 @@
     margin-bottom:15px;
 }
 .chatHeader{
-    height: 100px;
+    height: 60px;
+    margin-bottom: 10px;
+    color: white;
+}
+.header-list-item{
+    background-color: #25D366
 }
 .chatMessage{
     height: 300px;
+    overflow: auto;
 }
 .userList{
+    cursor: pointer;
+}
+li {
+    list-style-type: none;
+}
+
+.from-message{
+    background-color: #f1f1f1;
+    width: 60%;
+    border-radius: 25px;
+    height: auto;
+    padding: 1% 2% 1% 2%;
+    word-wrap: break-word;
+    margin-bottom: 5px;
+    text-align: left;
+    float: left;
+}
+.to-message{
+    background-color: #ddd;
+    width: 60%;
+    border-radius: 25px;
+    height: auto;
+    padding: 1% 2% 1% 2%;
+    word-wrap: break-word;
+    margin-bottom: 5px;
+    text-align: right;
+    float:right;
+}
+.profile-picture{
+    width: 5%;
+}
+.profile-picture-list{
+    width: 8%;
+}
+.dot {
+    height: 10px;
+    width: 10px;
+    background-color:green;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .avatar {
+    vertical-align: middle;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+  }
+  .checkmark {
+    display:inline-block;
+    width: 22px;
+    height:22px;
+    -ms-transform: rotate(45deg); /* IE 9 */
+    -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+    transform: rotate(45deg);
+}
+
+.checkmark_circle {
+    position: absolute;
+    width:22px;
+    height:22px;
+    background-color: green;
+    border-radius:11px;
+    left:0;
+    top:0;
+}
+
+.checkmark_stem {
+    position: absolute;
+    width:3px;
+    height:9px;
+    background-color:#fff;
+    left:11px;
+    top:6px;
+}
+
+.checkmark_kick {
+    position: absolute;
+    width:3px;
+    height:3px;
+    background-color:#fff;
+    left:8px;
+    top:12px;
+}
+.handCursor{
     cursor: pointer;
 }
