@@ -11,6 +11,11 @@ import { SignupComponent } from './signup/signup.component';
 import { SigninComponent } from './signin/signin.component';
 import { ChatComponent } from './chat/chat.component';
 
+import { PickerModule } from '@ctrl/ngx-emoji-mart'
+import { EmojiModule } from '@ctrl/ngx-emoji-mart/ngx-emoji'
+
+
+
 import { ChatService } from './chat.service';
 
 
@@ -26,7 +31,9 @@ import { ChatService } from './chat.service';
     AppRoutingModule,
     HttpClientModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    PickerModule,
+    EmojiModule
   ],
   providers: [ChatService],
   bootstrap: [AppComponent]

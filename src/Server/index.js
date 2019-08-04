@@ -24,6 +24,7 @@ let io = socketIO(server);
 const port = process.env.PORT || 3000;
 
 io.on('connection', (socket) => {
+   console.log("Socket ID=>>>>",socket.id);
   console.log('user connected');  
   socket.on('new-message', (message) => {
     console.log("Send message Details",message);
@@ -49,7 +50,6 @@ io.on('connection', (socket) => {
       for (let index = 0; index < users.length; index++) {
          const user = users[index];
          console.log(user);
-         
          io.to(user).emit('new-message', message);
          //socket.to(user).emit('new-message', message.chatMsg);
           // socket.broadcast.to(user).emit('new-message', message.chatMsg);
@@ -84,6 +84,10 @@ io.on('connection', (socket) => {
       })
 
    });
+
+   socket.on('disconnect', (reason) => {
+      console.log("user disconnetd",socket.id);
+    });
 
 });
 

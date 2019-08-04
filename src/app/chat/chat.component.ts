@@ -20,6 +20,9 @@ export class ChatComponent implements OnInit {
   noOnlineUser = false;
   profile_picture = "";
   chat_profile_picture = false;
+  showSelectedUser = 0;
+  attachment: any;
+  emojiHideShow = false;
 
   constructor(private chatService: ChatService, private route: Router) { }
 
@@ -43,9 +46,11 @@ export class ChatComponent implements OnInit {
       "to_user_id": new FormControl(null, Validators.required),
       "to_user_name": new FormControl(null, Validators.required),
       "socket_id": new FormControl(null),
+      "attachment" : new FormControl(null)
     });
 
-    this.chatService.getMessages().subscribe((message: string) => {
+    this.chatService.getMessages().subscribe((message: string) => {   
+      console.log("messages",message);   
       this.messages.push(message);
     });
 
@@ -82,6 +87,9 @@ export class ChatComponent implements OnInit {
 
     this.chat_profile_picture = userData[0].profile_picture;
     this.chatService.getChatMessageService(userData[0].user_id);
+    this.showSelectedUser = userData[0].user_id;
+
+
   }
   sendMessage(data) {
     let sendData = {
@@ -90,18 +98,46 @@ export class ChatComponent implements OnInit {
       "message": data.value.message,
       "from_user_id": localStorage.getItem('user_id'),
       "from_user_name": localStorage.getItem('user_name'),
-      "to_socket_id": data.value.socket_id
+      "to_socket_id": data.value.socket_id,
+      "added_date_time" : new Date()
     };
 
     this.chatService.sendMessageService(sendData);
     this.chatForm.patchValue({
       "message": "",
     });
+  }
+
+  blockUser(block_user_id){
 
   }
+
+  openAttchment(event: any) {
+    event.preventDefault();
+    let element: HTMLElement = document.getElementById('attachment') as HTMLElement;
+    element.click();
+  }
+
+  onFileChange(event: any) {
+    let files = event.target.files;
+    this.attachment = files[0].name;
+  }
+
   logout() {
     this.chatService.logoutService();
     localStorage.clear();
     this.route.navigate(['/signin']);
+  } 
+
+  emoji(){
+    this.emojiHideShow = !this.emojiHideShow;
   }
+  addEmoji(event){
+    console.log(event);
+    //this.emojiHideShow = !this.emojiHideShow;    
+  }
+  onRightClick(messageID){
+    return false;
+  }
+
 }
