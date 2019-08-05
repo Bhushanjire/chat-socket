@@ -22,9 +22,11 @@ export class ChatService {
     this.getAllUsers();
     this.getUpdatedUsers();
   }
-
   getAllUsers() {
-    this.socket.emit("getAllUsers");
+    let postData ={
+      "from_user_id" : localStorage.getItem("user_id")
+    }
+    this.socket.emit("getAllUsers",postData);
   }
   getUpdatedUsers() {
     this.socket.on('users-list', (message) => {
@@ -58,6 +60,7 @@ export class ChatService {
   public sendMessageService(message) {
     message.from_socket_id = this.socketID;
     this.socket.emit('new-message', message);
+   // this.socket.emit("getAllUsers",message.from_user_id);
   }
 
   public getMessages() {

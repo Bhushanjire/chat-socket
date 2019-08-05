@@ -97,9 +97,10 @@ io.on('connection', (socket) => {
 
 
 
-socket.on("getAllUsers", () => {
-   console.log('getAllUsers');
-   connection.query("SELECT U.user_id,U.name,U.username,U.profile_picture,OU.socket_id,(select COUNT(`single_chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND `is_read`='no') AS unread_msg FROM users U LEFT JOIN online_users OU ON U.user_id=OU.user_id", function (err, res) {
+socket.on("getAllUsers", (postData) => {
+   const sql="SELECT U.user_id,U.name,U.username,U.profile_picture,OU.socket_id,(select COUNT(`single_chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='"+postData.from_user_id+"' AND  `is_read`='no' GROUP by to_user_id) AS unread_msg FROM users U LEFT JOIN online_users OU ON U.user_id=OU.user_id";
+   console.log(sql);
+   connection.query(sql, function (err, res) {
       if (err) return io.emit('error-on-getting-list', err);
       console.log("Updated Users", res);
       io.emit('users-list', res)
