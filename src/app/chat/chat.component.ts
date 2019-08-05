@@ -3,6 +3,7 @@ import { ChatService } from '../chat.service';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
+
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
@@ -49,13 +50,17 @@ export class ChatComponent implements OnInit {
       "attachment" : new FormControl(null)
     });
 
-    this.chatService.getMessages().subscribe((message: string) => {   
-      console.log("messages",message);   
-      this.messages.push(message);
+    this.chatService.getMessages().subscribe((message: any) => {   
+     // this.messages.push(message);
+     if(message.length>0){
+     if((message[0].from_user_id==this.loginUser && message[0].to_user_id==this.showSelectedUser) || (message[0].from_user_id==this.showSelectedUser && message[0].to_user_id== this.loginUser ))
+        this.messages = message;
+     }
     });
-
+  
     this.chatService.setChatMessages().subscribe((responce: any) => {
       this.messages = responce;
+      console.log("set Chat message");
     });
 
     this.chatService.updatedUsers.subscribe((res) => {
@@ -68,7 +73,8 @@ export class ChatComponent implements OnInit {
         this.noOnlineUser = false;
       }
 
-    })
+    });
+
   }
 
   getUser(userData) {
@@ -86,7 +92,7 @@ export class ChatComponent implements OnInit {
     });
 
     this.chat_profile_picture = userData[0].profile_picture;
-    this.chatService.getChatMessageService(userData[0].user_id);
+    this.chatService.getChatMessageService(userData[0].user_id,userData[0].socket_id);
     this.showSelectedUser = userData[0].user_id;
 
 
@@ -135,6 +141,10 @@ export class ChatComponent implements OnInit {
   addEmoji(event){
     console.log(event);
     //this.emojiHideShow = !this.emojiHideShow;    
+  }
+  clearChat(to_user_id){
+    this.chatService.clearChatService(to_user_id);
+    this.chatService.getChatMessageService(to_user_id,0);
   }
   onRightClick(messageID){
     return false;

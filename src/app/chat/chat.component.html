@@ -16,12 +16,13 @@
     <div class="row" *ngIf="chatMessageDiv">
         <div class="col-md-4">
             <ul class="list-group" *ngFor="let userData of userList;let i = index ">
-                <li class="list-group-item userList" [ngClass]="userData.user_id==showSelectedUser ? 'header-list-item' : '' "
+                <li class="list-group-item userList"
+                    [ngClass]="userData.user_id==showSelectedUser ? 'header-list-item' : '' "
                     *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
                     <span class="dot" *ngIf="userData.socket_id!=null"></span>
-                    <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list" alt="loginUsername"
-                        >
-                    &nbsp; {{userData.name}}  <span class="badge badge-success" style="float: right">9</span>
+                    <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list" alt="loginUsername">
+                    &nbsp; {{userData.name}} 
+                    <span *ngIf="userData.unread_msg!=0" class="badge badge-success" style="float: right">{{userData.unread_msg}}</span>
                     <div *ngIf="userData.socket_id!=null" style="margin-bottom: -21px;">
                         <sub class="text-muted activeUser">Active</sub>
                     </div>
@@ -37,76 +38,106 @@
                             <img src="{{chat_profile_picture}}" class="avatar profile-picture" alt="loginUsername"
                                 *ngIf="chat_profile_picture">&nbsp;&nbsp; {{selectedUser}}
                             <span style="float: right" *ngIf="showSelectedUser>0">
-                                      <div class="dropdown dropleft">
-                                        <i class="fa fa-ellipsis-v handCursor"  data-toggle="dropdown" aria-hidden="true" ></i>
-                                        <div class="dropdown-menu dropdown-menu-left">
-                                          <a class="dropdown-item" href="JavaScript:Void(0)">Cleare Chat</a>
-                                          <a class="dropdown-item" href="JavaScript:Void(0)" (click)="blockUser(showSelectedUser)">Block</a>
-                                        </div>
-                                      </div>
+                                <div class="dropdown dropleft">
+                                    <i class="fa fa-ellipsis-v handCursor" data-toggle="dropdown"
+                                        aria-hidden="true"></i>
+                                    <div class="dropdown-menu dropdown-menu-left">
+                                        <div class="dropdown-item handCursor" (click)="clearChat(showSelectedUser)">
+                                            Cleare Chat</div>
+                                        <div class="dropdown-item handCursor" (click)="blockUser(showSelectedUser)">
+                                            Block</div>
+                                    </div>
+                                </div>
                             </span>
-                            
-                            </li>
+                        </li>
                     </ul>
                 </div>
             </div>
             <div class="row chatMessage">
-                
+
                 <div class="col-md-12">
                     <div *ngFor="let ChatMessages of messages"
-                        [ngClass]="ChatMessages.from_user_id==loginUser ? 'from-message': 'to-message'"  (contextmenu)="onRightClick(ChatMessages.single_chat_id)">
-                        {{ChatMessages.message}} 
-                        <span class="text-muted"><small>{{ChatMessages.added_date_time | date : 'dd-MMM-yy h:mm a'}}</small></span>
+                        [ngClass]="ChatMessages.from_user_id==loginUser ? 'from-message': 'to-message'"
+                        (contextmenu)="onRightClick(ChatMessages.single_chat_id)">
+                        {{ChatMessages.message}}
+                        <span
+                            class="text-muted"><small>{{ChatMessages.added_date_time | date : 'dd-MMM-yy h:mm a'}}</small></span>
                         &nbsp;
+                        <span *ngIf="ChatMessages.from_user_id==loginUser">
+                                <span *ngIf="ChatMessages.is_read=='no'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="12" height="12"
+                                            viewBox="0 0 226 226" style=" fill:#000000;">
+                                            <g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt"
+                                                stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray=""
+                                                stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none"
+                                                text-anchor="none" style="mix-blend-mode: normal">
+                                                <path d="M0,226v-226h226v226z" fill="none"></path>
+                                                <g fill="#808080">
+                                                    <g id="surface1">
+                                                        <path
+                                                            d="M58.76,189.84c-2.38359,0 -4.69656,-0.95344 -6.39156,-2.64844l-49.72,-49.72c-3.53125,-3.53125 -3.53125,-9.25187 0,-12.78312c3.53125,-3.53125 9.25187,-3.53125 12.78312,0l42.69281,42.69281l102.15906,-123.41719c3.17812,-3.86672 8.88109,-4.39641 12.7125,-1.20063c3.84906,3.17813 4.39641,8.88109 1.20063,12.7125l-108.48,131.08c-1.60672,1.9775 -3.99031,3.16047 -6.53281,3.26641c-0.14125,0.01766 -0.2825,0.01766 -0.42375,0.01766zM108.90375,189.82234c2.5425,-0.10594 4.90844,-1.28891 6.53281,-3.26641l108.48,-131.08c3.19578,-3.83141 2.64844,-9.53437 -1.20063,-12.7125c-3.83141,-3.19578 -9.53437,-2.64844 -12.7125,1.20063l-102.15906,123.41719l-2.01281,-2.01281c-3.53125,-3.53125 -9.25187,-3.53125 -12.78312,0c-3.53125,3.53125 -3.53125,9.25188 0,12.78313l9.04,9.04c1.695,1.695 4.00797,2.64844 6.39156,2.64844c0.14125,0 0.2825,0 0.42375,-0.01766z">
+                                                        </path>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    <span *ngIf="ChatMessages.is_read=='yes'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="12" height="12"
+                                            viewBox="0 0 226 226" style=" fill:#000000;">
+                                            <g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt"
+                                                stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray=""
+                                                stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none"
+                                                text-anchor="none" style="mix-blend-mode: normal">
+                                                <path d="M0,226v-226h226v226z" fill="none"></path>
+                                                <g fill="#189ee9">
+                                                    <g id="surface1">
+                                                        <path
+                                                            d="M58.76,189.84c-2.38359,0 -4.69656,-0.95344 -6.39156,-2.64844l-49.72,-49.72c-3.53125,-3.53125 -3.53125,-9.25187 0,-12.78312c3.53125,-3.53125 9.25187,-3.53125 12.78312,0l42.69281,42.69281l102.15906,-123.41719c3.17812,-3.86672 8.88109,-4.39641 12.7125,-1.20063c3.84906,3.17813 4.39641,8.88109 1.20063,12.7125l-108.48,131.08c-1.60672,1.9775 -3.99031,3.16047 -6.53281,3.26641c-0.14125,0.01766 -0.2825,0.01766 -0.42375,0.01766zM108.90375,189.82234c2.5425,-0.10594 4.90844,-1.28891 6.53281,-3.26641l108.48,-131.08c3.19578,-3.83141 2.64844,-9.53437 -1.20063,-12.7125c-3.83141,-3.19578 -9.53437,-2.64844 -12.7125,1.20063l-102.15906,123.41719l-2.01281,-2.01281c-3.53125,-3.53125 -9.25187,-3.53125 -12.78312,0c-3.53125,3.53125 -3.53125,9.25188 0,12.78313l9.04,9.04c1.695,1.695 4.00797,2.64844 6.39156,2.64844c0.14125,0 0.2825,0 0.42375,-0.01766z">
+                                                        </path>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                </span>
                         
-                        <!-- <span class="checkmark" *ngIf="ChatMessages.from_user_id!=loginUser">
-                                <div class="checkmark_circle"></div>
-                                <div class="checkmark_stem"></div>
-                                <div class="checkmark_kick"></div>
-                            </span> -->
-                            <!-- <i class="fa fa-check" aria-hidden="true"></i> -->
-                            <!-- Unread Message SVG -->
-                            <!-- <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-width="50" height="50"
-viewBox="0 0 226 226"
-style=" fill:#000000;"><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,226v-226h226v226z" fill="none"></path><g fill="#ffffff"><g id="surface1"><path d="M58.76,189.84c-2.38359,0 -4.69656,-0.95344 -6.39156,-2.64844l-49.72,-49.72c-3.53125,-3.53125 -3.53125,-9.25187 0,-12.78312c3.53125,-3.53125 9.25187,-3.53125 12.78312,0l42.69281,42.69281l102.15906,-123.41719c3.17812,-3.86672 8.88109,-4.39641 12.7125,-1.20063c3.84906,3.17813 4.39641,8.88109 1.20063,12.7125l-108.48,131.08c-1.60672,1.9775 -3.99031,3.16047 -6.53281,3.26641c-0.14125,0.01766 -0.2825,0.01766 -0.42375,0.01766zM108.90375,189.82234c2.5425,-0.10594 4.90844,-1.28891 6.53281,-3.26641l108.48,-131.08c3.19578,-3.83141 2.64844,-9.53437 -1.20063,-12.7125c-3.83141,-3.19578 -9.53437,-2.64844 -12.7125,1.20063l-102.15906,123.41719l-2.01281,-2.01281c-3.53125,-3.53125 -9.25187,-3.53125 -12.78312,0c-3.53125,3.53125 -3.53125,9.25188 0,12.78313l9.04,9.04c1.695,1.695 4.00797,2.64844 6.39156,2.64844c0.14125,0 0.2825,0 0.42375,-0.01766z"></path></g></g></g></svg>
- -->
-
- <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-width="12" height="12"
-viewBox="0 0 226 226"
-style=" fill:#000000;"><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,226v-226h226v226z" fill="none"></path><g fill="#189ee9"><g id="surface1"><path d="M58.76,189.84c-2.38359,0 -4.69656,-0.95344 -6.39156,-2.64844l-49.72,-49.72c-3.53125,-3.53125 -3.53125,-9.25187 0,-12.78312c3.53125,-3.53125 9.25187,-3.53125 12.78312,0l42.69281,42.69281l102.15906,-123.41719c3.17812,-3.86672 8.88109,-4.39641 12.7125,-1.20063c3.84906,3.17813 4.39641,8.88109 1.20063,12.7125l-108.48,131.08c-1.60672,1.9775 -3.99031,3.16047 -6.53281,3.26641c-0.14125,0.01766 -0.2825,0.01766 -0.42375,0.01766zM108.90375,189.82234c2.5425,-0.10594 4.90844,-1.28891 6.53281,-3.26641l108.48,-131.08c3.19578,-3.83141 2.64844,-9.53437 -1.20063,-12.7125c-3.83141,-3.19578 -9.53437,-2.64844 -12.7125,1.20063l-102.15906,123.41719l-2.01281,-2.01281c-3.53125,-3.53125 -9.25187,-3.53125 -12.78312,0c-3.53125,3.53125 -3.53125,9.25188 0,12.78313l9.04,9.04c1.695,1.695 4.00797,2.64844 6.39156,2.64844c0.14125,0 0.2825,0 0.42375,-0.01766z"></path></g></g></g></svg>                   </div>
+                    </div>
                 </div>
             </div>
             <div class="row mt-3" *ngIf="chatFormDiv">
-                   
+
                 <div class="col-md-12">
                     <div class="emojiDiv">
-                            <emoji-mart title="Pick your emoji…" emoji="point_up" *ngIf="emojiHideShow" (emojiSelect)="addEmoji($event)"></emoji-mart>
-                            <!-- <emoji-mart set="emojione"></emoji-mart> -->
-                            <!-- <emoji-mart (emojiClick)="addEmoji($event)"></emoji-mart> -->
-                            <!-- <emoji-mart [style]="{ position: 'absolute', bottom: '20px', right: '20px' }"></emoji-mart> -->
-                            <!-- <emoji-mart [i18n]="{ search: 'Recherche', categories: { search: 'Résultats de recherche', recent: 'Récents' } }"></emoji-mart> -->
-    
+                        <emoji-mart title="Pick your emoji…" emoji="point_up" *ngIf="emojiHideShow"
+                            (emojiSelect)="addEmoji($event)"></emoji-mart>
+                        <!-- <emoji-mart set="emojione"></emoji-mart> 
+                            <emoji-mart (emojiClick)="addEmoji($event)"></emoji-mart>
+                             <emoji-mart [style]="{ position: 'absolute', bottom: '20px', right: '20px' }"></emoji-mart> 
+                           <emoji-mart [i18n]="{ search: 'Recherche', categories: { search: 'Résultats de recherche', recent: 'Récents' } }"></emoji-mart> -->
+
                     </div>
-                        
+
                     <form [formGroup]="chatForm" (ngSubmit)="sendMessage(chatForm)">
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="input-msg-div">
-                                    
 
-                                        <i class="fa fa-grin handCursor" aria-hidden="true" (click)="emoji()"></i>
-                                <input type="textarea" formControlName="message" class="inputMsg" placeholder="Type a message">
-                                <input type="hidden" formControlName="from_user_id">
-                                <input type="hidden" formControlName="from_user_name">
-                                <input type="hidden" formControlName="to_user_id">
-                                <input type="hidden" formControlName="to_user_name">
-                                <input type="hidden" formControlName="socket_id">
-                                <input  type="file" placeholder="attachment" formControlName="attachment" 
-                                id="attachment" name="attachment" style="display:none" (change)="onFileChange($event)">
-                                <i class="fa fa-paperclip handCursor" aria-hidden="true" (click)="openAttchment($event)"></i>
-                            </div>
+
+                                    <i class="fa fa-grin handCursor" aria-hidden="true" (click)="emoji()"></i>
+                                    <input type="textarea" formControlName="message" class="inputMsg"
+                                        placeholder="Type a message">
+                                    <input type="hidden" formControlName="from_user_id">
+                                    <input type="hidden" formControlName="from_user_name">
+                                    <input type="hidden" formControlName="to_user_id">
+                                    <input type="hidden" formControlName="to_user_name">
+                                    <input type="hidden" formControlName="socket_id">
+                                    <input type="file" placeholder="attachment" formControlName="attachment"
+                                        id="attachment" name="attachment" style="display:none"
+                                        (change)="onFileChange($event)">
+                                    <i class="fa fa-paperclip handCursor" aria-hidden="true"
+                                        (click)="openAttchment($event)"></i>
+                                </div>
                             </div>
                             <div class="col-md-4"><button type="submit" class="btn btn-primary"
                                     [disabled]="chatForm.invalid">Send</button></div>

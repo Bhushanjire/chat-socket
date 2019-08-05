@@ -36,6 +36,12 @@ export class ChatService {
   initConnection() {
     this.socket.on('connect', () => {
       this.socketID = this.socket.id;
+      let postData = {
+        "user_id" : localStorage.getItem('user_id'),
+        "user_name" : localStorage.getItem('user_name'),
+        "socket_id" : this.socket.id
+      }     
+      this.socket.emit("addSocketID", postData);
       this.isLoggedIn.next(true);
     });
   }
@@ -77,22 +83,29 @@ export class ChatService {
     this.socket.emit("disconnectUser", postData);
     this.getAllUsers();
   }
-
-  public getChatMessageService(to_user_id) {
+  public getChatMessageService(to_user_id,to_socket_id) {
     let postData = {
       "from_user_id": localStorage.getItem('user_id'),
-      "to_user_id": to_user_id
+      "to_user_id": to_user_id,
+      "from_socket_id" : this.socketID,
+      "to_socket_id" : to_socket_id
     }
     this.socket.emit("getChatMessages", postData);
-
+    this.socket.emit("updateMessageAsRead",postData);
   }
-
   setChatMessages() {
     return Observable.create((observer) => {
       this.socket.on('getChatMessages', (responce) => {
         observer.next(responce);
       });
     });
+  }
+  clearChatService(to_user_id){
+    let postData = {
+      "from_user_id": localStorage.getItem('user_id'),
+      "to_user_id": to_user_id
+    }
+    this.socket.emit('clearChat',postData);
   }
 
 }
