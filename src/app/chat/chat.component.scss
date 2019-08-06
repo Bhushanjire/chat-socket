@@ -140,25 +140,3 @@ li {
     position: fixed;
     bottom: 180px;
   }
-
-
-
-
-  input {
-    height: 50px;
-    flex-grow: 1;
-    line-height: 35px;
-    padding-left: 20px;
-    border-radius: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border: none;
-    font-size: 16px;
-    color: #333;
-    min-height: auto;
-    overflow-y: hidden;
-    resize: none;
-    border-left: 1px solid #ccc;
-  }

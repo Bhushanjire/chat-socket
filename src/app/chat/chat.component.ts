@@ -24,7 +24,7 @@ export class ChatComponent implements OnInit {
   showSelectedUser = 0;
   attachment: any;
   showEmojiPicker = false;
-  chat_message="";
+  emojiMessage="";
 
   constructor(private chatService: ChatService, private route: Router) { }
 
@@ -42,7 +42,7 @@ export class ChatComponent implements OnInit {
     this.profile_picture = localStorage.getItem('profile_picture');
 
     this.chatForm = new FormGroup({
-      "message": new FormControl(null, Validators.required),
+      "message": new FormControl("", Validators.required),
       "from_user_id": new FormControl(null, Validators.required),
       "from_user_name": new FormControl(null, Validators.required),
       "to_user_id": new FormControl(null, Validators.required),
@@ -120,6 +120,7 @@ export class ChatComponent implements OnInit {
     this.chatForm.patchValue({
       "message": "",
     });
+     this.showEmojiPicker = false;
   }
 
   blockUser(block_user_id){
@@ -142,17 +143,15 @@ export class ChatComponent implements OnInit {
     localStorage.clear();
     this.route.navigate(['/signin']);
   } 
-
   toggleEmojiPicker() {
     this.showEmojiPicker = !this.showEmojiPicker;
   }
   addEmoji(event){
-    const { chat_message } = this;
-    const text = `${event.emoji.native}`;
-console.log(event)
-
-    this.chat_message = text;
-    this.showEmojiPicker = false;
+      this.emojiMessage = this.chatForm.value.message;
+    const completeMessage = `${this.emojiMessage}${event.emoji.native}`;
+    this.chatForm.patchValue({
+      "message" : completeMessage
+    });
   }
   clearChat(to_user_id){
     this.chatService.clearChatService(to_user_id);

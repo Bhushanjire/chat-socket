@@ -2,13 +2,6 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <h3>Rapidera Chat Application</h3>
-            <h4>
-                <ngx-emoji emoji="santa" set="emojione" size="16"></ngx-emoji>
-
-
-            </h4>
-            <i class="em em-some-emoji"></i>
-
         </div>
         <div class="col-md-6 text-right">
             Welcome , {{loginUsername}} <button type="button" class="btn btn-primary" (click)="logout()">Logout</button>
@@ -27,7 +20,7 @@
                     [ngClass]="userData.user_id==showSelectedUser ? 'header-list-item' : '' "
                     *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
                     <span class="dot" *ngIf="userData.socket_id!=null"></span>
-                    <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list" alt="loginUsername">
+                    <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list" alt="{{userData.name}}">
                     &nbsp; {{userData.name}}
                     <span *ngIf="userData.unread_msg!=null" class="badge badge-success"
                         style="float: right">{{userData.unread_msg}}</span>
@@ -112,6 +105,9 @@
                             </span>
                         </span>
                     </div>
+                    <div>
+                        <!-- <img src="assets/images/profile_picture/p1.jpeg" width="200" height="200"> -->
+                    </div>
                 </div>
             </div>
             <div class="row mt-3" *ngIf="chatFormDiv">
@@ -121,9 +117,6 @@
                     <emoji-mart  color="#FFFF99" class="emoji-mart" set="apple" (emojiSelect)="addEmoji($event)"
                             *ngIf="showEmojiPicker" title="Pick your emoji…"></emoji-mart>
 
-
-
-
                     <form [formGroup]="chatForm" (ngSubmit)="sendMessage(chatForm)">
                         <div class="row">
                             <div class="col-md-8">
@@ -131,7 +124,7 @@
                                     <i class="fa fa-grin handCursor" aria-hidden="true"
                                         (click)="toggleEmojiPicker()"></i>
                                     <input type="input" formControlName="message" class="inputMsg"
-                                        placeholder="Type a message" name="chat_message" [(ngModel)]="chat_message">
+                                        placeholder="Type a message">
                                     <input type="hidden" formControlName="from_user_id">
                                     <input type="hidden" formControlName="from_user_name">
                                     <input type="hidden" formControlName="to_user_id">
