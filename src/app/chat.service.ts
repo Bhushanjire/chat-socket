@@ -23,26 +23,26 @@ export class ChatService {
     this.getUpdatedUsers();
   }
   getAllUsers() {
-    let postData ={
-      "from_user_id" : localStorage.getItem("user_id")
+    let postData = {
+      "from_user_id": localStorage.getItem("user_id")
     }
-    this.socket.emit("getAllUsers",postData);
+    this.socket.emit("getAllUsers", postData);
   }
   getUpdatedUsers() {
     this.socket.on('users-list', (message) => {
       this.updatedUsers.next(message);
+      console.log("Updated User List", message);
     });
   }
-
 
   initConnection() {
     this.socket.on('connect', () => {
       this.socketID = this.socket.id;
       let postData = {
-        "user_id" : localStorage.getItem('user_id'),
-        "user_name" : localStorage.getItem('user_name'),
-        "socket_id" : this.socket.id
-      }     
+        "user_id": localStorage.getItem('user_id'),
+        "user_name": localStorage.getItem('user_name'),
+        "socket_id": this.socket.id
+      }
       this.socket.emit("addSocketID", postData);
       this.isLoggedIn.next(true);
     });
@@ -60,7 +60,7 @@ export class ChatService {
   public sendMessageService(message) {
     message.from_socket_id = this.socketID;
     this.socket.emit('new-message', message);
-   // this.socket.emit("getAllUsers",message.from_user_id);
+    this.socket.emit('updateUnreadMsgCount',message);
   }
 
   public getMessages() {
@@ -86,15 +86,16 @@ export class ChatService {
     this.socket.emit("disconnectUser", postData);
     this.getAllUsers();
   }
-  public getChatMessageService(to_user_id,to_socket_id) {
+  public getChatMessageService(to_user_id, to_socket_id) {
     let postData = {
       "from_user_id": localStorage.getItem('user_id'),
       "to_user_id": to_user_id,
-      "from_socket_id" : this.socketID,
-      "to_socket_id" : to_socket_id
+      "from_socket_id": this.socketID,
+      "to_socket_id": to_socket_id
     }
+    this.socket.emit("updateMessageAsRead", postData);
+    this.socket.emit('updateUnreadMsgCount',postData);
     this.socket.emit("getChatMessages", postData);
-    this.socket.emit("updateMessageAsRead",postData);
   }
   setChatMessages() {
     return Observable.create((observer) => {
@@ -102,13 +103,23 @@ export class ChatService {
         observer.next(responce);
       });
     });
+
   }
-  clearChatService(to_user_id){
+  clearChatService(to_user_id) {
     let postData = {
       "from_user_id": localStorage.getItem('user_id'),
       "to_user_id": to_user_id
     }
-    this.socket.emit('clearChat',postData);
+    this.socket.emit('clearChat', postData);
   }
+
+  public updateUnreadMsgCount() {
+    return Observable.create((observer) => {
+      this.socket.on('updateUnreadMsgCount', (message) => {
+        observer.next(message);
+      });
+    });
+  }
+
 
 }

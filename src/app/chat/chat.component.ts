@@ -23,7 +23,8 @@ export class ChatComponent implements OnInit {
   chat_profile_picture = false;
   showSelectedUser = 0;
   attachment: any;
-  emojiHideShow = false;
+  showEmojiPicker = false;
+  chat_message="";
 
   constructor(private chatService: ChatService, private route: Router) { }
 
@@ -50,17 +51,26 @@ export class ChatComponent implements OnInit {
       "attachment" : new FormControl(null)
     });
 
-    this.chatService.getMessages().subscribe((message: any) => {   
+    this.chatService.getMessages().subscribe((message: any) => {  
+      console.log("#####", message  );
+      
      // this.messages.push(message);
      if(message.length>0){
      if((message[0].from_user_id==this.loginUser && message[0].to_user_id==this.showSelectedUser) || (message[0].from_user_id==this.showSelectedUser && message[0].to_user_id== this.loginUser ))
         this.messages = message;
+        console.log(message);
+        
+        // this.messages.innerHTML = JSON.stringify(message);
+
      }
     });
-  
+
+    this.chatService.updateUnreadMsgCount().subscribe(responce=>{
+        this.userList=responce;
+    });
+
     this.chatService.setChatMessages().subscribe((responce: any) => {
       this.messages = responce;
-      console.log("set Chat message");
     });
 
     this.chatService.updatedUsers.subscribe((res) => {
@@ -94,8 +104,6 @@ export class ChatComponent implements OnInit {
     this.chat_profile_picture = userData[0].profile_picture;
     this.chatService.getChatMessageService(userData[0].user_id,userData[0].socket_id);
     this.showSelectedUser = userData[0].user_id;
-
-
   }
   sendMessage(data) {
     let sendData = {
@@ -135,12 +143,16 @@ export class ChatComponent implements OnInit {
     this.route.navigate(['/signin']);
   } 
 
-  emoji(){
-    this.emojiHideShow = !this.emojiHideShow;
+  toggleEmojiPicker() {
+    this.showEmojiPicker = !this.showEmojiPicker;
   }
   addEmoji(event){
-    console.log(event);
-    //this.emojiHideShow = !this.emojiHideShow;    
+    const { chat_message } = this;
+    const text = `${event.emoji.native}`;
+console.log(event)
+
+    this.chat_message = text;
+    this.showEmojiPicker = false;
   }
   clearChat(to_user_id){
     this.chatService.clearChatService(to_user_id);
@@ -148,6 +160,19 @@ export class ChatComponent implements OnInit {
   }
   onRightClick(messageID){
     return false;
+  }
+  stingToHtml(message){
+    console.log(message);
+    
+    // var xmlString = "<div id='foo'><a href='#'>Link</a><span></span></div>";
+    // let doc = new DOMParser().parseFromString(message, "text/xml");
+    // document.getElementById("messageID").innerHTML=doc;
+
+  }
+
+  test(m){
+    console.log(m);
+    
   }
 
 }

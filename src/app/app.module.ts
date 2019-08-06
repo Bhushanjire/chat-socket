@@ -14,6 +14,8 @@ import { ChatComponent } from './chat/chat.component';
 import { PickerModule } from '@ctrl/ngx-emoji-mart'
 import { EmojiModule } from '@ctrl/ngx-emoji-mart/ngx-emoji'
 
+import { EscapeHtmlPipe } from './pipes/keep-html.pipe';
+import { EscapeCssPipe } from './pipes/keep-css.pipe';
 
 
 import { ChatService } from './chat.service';
@@ -24,7 +26,9 @@ import { ChatService } from './chat.service';
     AppComponent,
     SignupComponent,
     SigninComponent,
-    ChatComponent
+    ChatComponent,
+    EscapeHtmlPipe,
+    EscapeCssPipe
   ],
   imports: [
     BrowserModule,

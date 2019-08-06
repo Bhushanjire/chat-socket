@@ -116,7 +116,7 @@ li {
 .inputMsg{
     outline: none !important;
     border: 0px;
-    width: 92%;
+    width: 90%;
     margin-left: 5px;
     word-wrap: break-word;
     line-break: auto;
@@ -134,4 +134,31 @@ li {
 .emojiDiv{
     position: absolute;
     z-index: 999;
+    margin-bottom: 100px;
 }
+.emoji-mart {
+    position: fixed;
+    bottom: 180px;
+  }
+
+
+
+
+  input {
+    height: 50px;
+    flex-grow: 1;
+    line-height: 35px;
+    padding-left: 20px;
+    border-radius: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border: none;
+    font-size: 16px;
+    color: #333;
+    min-height: auto;
+    overflow-y: hidden;
+    resize: none;
+    border-left: 1px solid #ccc;
+  }
