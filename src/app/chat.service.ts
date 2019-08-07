@@ -121,5 +121,9 @@ export class ChatService {
     });
   }
 
+  public blockUserService(postData){
+    this.socket.emit("blockUser",postData)
+  }
+
 
 }

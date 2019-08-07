@@ -1,7 +1,7 @@
 <div class="container">
     <div class="row mb-3">
         <div class="col-md-6">
-            <h3>Rapidera Chat Application</h3>
+            <img src="assets/images/profile_picture/logo.png" style="width:64%" />
         </div>
         <div class="col-md-6 text-right">
             Welcome , {{loginUsername}} <button type="button" class="btn btn-primary" (click)="logout()">Logout</button>
@@ -17,10 +17,11 @@
         <div class="col-md-4">
             <ul class="list-group" *ngFor="let userData of userList;let i = index ">
                 <li class="list-group-item userList"
-                    [ngClass]="userData.user_id==showSelectedUser ? 'header-list-item' : '' "
+                    [ngClass]="userData.user_id==showSelectedUser ? 'header-list-item activatedUser' : '' "
                     *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
                     <span class="dot" *ngIf="userData.socket_id!=null"></span>
-                    <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list" alt="{{userData.name}}">
+                    <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list"
+                        alt="{{userData.name}}">
                     &nbsp; {{userData.name}}
                     <span *ngIf="userData.unread_msg!=null" class="badge badge-success"
                         style="float: right">{{userData.unread_msg}}</span>
@@ -59,8 +60,21 @@
                 <div class="col-md-12">
                     <div *ngFor="let ChatMessages of messages"
                         [ngClass]="ChatMessages.from_user_id==loginUser ? 'from-message': 'to-message'"
-                        (contextmenu)="onRightClick(ChatMessages.single_chat_id)">
-                        {{ChatMessages.message}}
+                        (contextmenu)="onRightClick(ChatMessages.single_chat_id)"
+                        [ngSwitch]="ChatMessages.message_type">
+                        <span *ngSwitchCase="'text'">
+                            {{ChatMessages.message}}
+                        </span>
+                        <span *ngSwitchCase="'video'">
+                            <video controls #videoPlayer width="100" height="100">
+                                <source src="{{ChatMessages.message}}" type="video/mp4"/>
+                                Browser not supported
+                            </video>
+                        </span>
+                        <span *ngSwitchCase="'image'">
+                            <img src="{{ChatMessages.message}}" width="50" height="50">
+                        </span>
+
                         <!-- <span [innerHTML]="ChatMessages.message | keepHtml"></span> -->
                         <!-- <div (click)="test(ChatMessages.message)">{{ChatMessages.message}}</div> -->
                         <span
@@ -105,17 +119,14 @@
                             </span>
                         </span>
                     </div>
-                    <div>
-                        <!-- <img src="assets/images/profile_picture/p1.jpeg" width="200" height="200"> -->
-                    </div>
                 </div>
             </div>
             <div class="row mt-3" *ngIf="chatFormDiv">
 
                 <div class="col-md-12">
 
-                    <emoji-mart  color="#FFFF99" class="emoji-mart" set="apple" (emojiSelect)="addEmoji($event)"
-                            *ngIf="showEmojiPicker" title="Pick your emoji…"></emoji-mart>
+                    <emoji-mart color="#FFFF99" class="emoji-mart" set="apple" (emojiSelect)="addEmoji($event)"
+                        *ngIf="showEmojiPicker" title="Pick your emoji…"></emoji-mart>
 
                     <form [formGroup]="chatForm" (ngSubmit)="sendMessage(chatForm)">
                         <div class="row">
@@ -131,8 +142,7 @@
                                     <input type="hidden" formControlName="to_user_name">
                                     <input type="hidden" formControlName="socket_id">
                                     <input type="file" placeholder="attachment" formControlName="attachment"
-                                        id="attachment" name="attachment" style="display:none"
-                                        (change)="onFileChange($event)">
+                                        id="attachment" style="display:none" (change)="onFileChange($event)">
                                     <i class="fa fa-paperclip handCursor" aria-hidden="true"
                                         (click)="openAttchment($event)"></i>
                                 </div>
