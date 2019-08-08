@@ -129,7 +129,7 @@ export class ChatComponent implements OnInit {
       "from_block_user_id" : localStorage.getItem('user_id'),
       "to_block_user_id" : block_user_id,
     }
-
+    this.chatService.blockUserService(this.postData);
   }
 
   openAttchment(event: any) {
@@ -199,16 +199,5 @@ export class ChatComponent implements OnInit {
   }
   stingToHtml(message) {
     console.log(message);
-
-    // var xmlString = "<div id='foo'><a href='#'>Link</a><span></span></div>";
-    // let doc = new DOMParser().parseFromString(message, "text/xml");
-    // document.getElementById("messageID").innerHTML=doc;
-
   }
-
-  test(m) {
-    console.log(m);
-
-  }
-
 }

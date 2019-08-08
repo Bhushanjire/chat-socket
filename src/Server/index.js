@@ -54,7 +54,8 @@ io.on('connection', (socket) => {
 
    socket.on('new-message', (message) => {
       console.log("Send message Details", message);
-      let users = [message.to_socket_id, message.from_socket_id];
+      let socket_ids = [message.to_socket_id, message.from_socket_id];
+      let user_ids = [message.to_user_id, message.from_user_id];
 
       //INSERT CHAT MESSAGE
       const from_user_id = message.from_user_id;
@@ -68,22 +69,19 @@ io.on('connection', (socket) => {
             function (error, result) {
                if (error) { console.log("Error on file upload", error); } else {
                   console.log("File Upload Succsessfull", result);
-                  var sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message,message_type)VALUES('" + from_user_id + "','" + from_user_name + "','" + to_user_id + "','" + to_user_name + "','" + result.secure_url + "','" + result.resource_type + "')";
-                  console.log(sql);
-                  connection.query(sql, function (err, res) {
-                     if (err) return io.emit('error-on-adding-chat message', err);
-                     sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + from_user_id + "' and from_user_id='" + to_user_id + "') OR (to_user_id='" + to_user_id + "' AND from_user_id='" + from_user_id + "'))";
-                     // console.log(sql);
+                  for (let index = 0; index < socket_ids.length; index++) {
+                     var sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message,message_type)VALUES('" + from_user_id + "','" + from_user_name + "','" + to_user_id + "','" + to_user_name + "','" + result.secure_url + "','" + result.resource_type + "')";
                      connection.query(sql, function (err, res) {
-                        if (err) return io.emit('error-on-getting-chat message', err);
-                        for (let index = 0; index < users.length; index++) {
-                           const user = users[index];
-                           io.to(user).emit('new-message', res);
-                           //socket.to(user).emit('new-message', message.chatMsg);
-                           // socket.broadcast.to(user).emit('new-message', message.chatMsg);
-                        }
-                     });
-                  })
+                        if (err) return io.emit('error-on-adding-chat message', err);
+                        sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + from_user_id + "' and from_user_id='" + to_user_id + "') OR (to_user_id='" + to_user_id + "' AND from_user_id='" + from_user_id + "')) AND conversation_id='" + from_user_id + "' AND is_block='no'";
+                        // console.log(sql);
+                        connection.query(sql, function (err, res) {
+                           if (err) return io.emit('error-on-getting-chat message', err);
+                           const socket_id = socket_ids[index];
+                           io.to(socket_id).emit('new-message', res);
+                        });
+                     })
+                  }
                }
             });
       } else if (message.file_type == "video") {
@@ -99,14 +97,13 @@ io.on('connection', (socket) => {
                eager_async: true,
                eager_notification_url: "https://mysite.example.com/notify_endpoint"
             },
-            function (error, result) { 
+            function (error, result) {
                if (error) { console.log("Error on file upload", error); } else {
                   console.log("File Upload Succsessfull", result);
                   var sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message,message_type)VALUES('" + from_user_id + "','" + from_user_name + "','" + to_user_id + "','" + to_user_name + "','" + result.secure_url + "','" + result.resource_type + "')";
-                  console.log(sql);
                   connection.query(sql, function (err, res) {
                      if (err) return io.emit('error-on-adding-chat message', err);
-                     sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + from_user_id + "' and from_user_id='" + to_user_id + "') OR (to_user_id='" + to_user_id + "' AND from_user_id='" + from_user_id + "'))";
+                     sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + from_user_id + "' and from_user_id='" + to_user_id + "') OR (to_user_id='" + to_user_id + "')) AND conversation_id='" + from_user_id + "' AND is_block='no'";
                      // console.log(sql);
                      connection.query(sql, function (err, res) {
                         if (err) return io.emit('error-on-getting-chat message', err);
@@ -119,40 +116,48 @@ io.on('connection', (socket) => {
                      });
                   })
                }
-            
             });
-
       } else {
-         var sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message)VALUES('" + from_user_id + "','" + from_user_name + "','" + to_user_id + "','" + to_user_name + "','" + chat_message + "')";
-         console.log(sql);
+
+
+         sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + from_user_id + "' and from_user_id='" + to_user_id + "') OR (to_user_id='" + to_user_id + "' AND from_user_id='" + from_user_id + "')) AND conversation_id='" + user_ids[index] + "' AND is_block='no'";
          connection.query(sql, function (err, res) {
-            if (err) return io.emit('error-on-adding-chat message', err);
-            sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + from_user_id + "' and from_user_id='" + to_user_id + "') OR (to_user_id='" + to_user_id + "' AND from_user_id='" + from_user_id + "'))";
-            // console.log(sql);
+            if (err) return io.emit('error-on-getting-chat message', err);
+            const socket_id = socket_ids[index];
+            io.to(socket_id).emit('new-message', res);
+            //socket.to(user).emit('new-message', message.chatMsg);
+            // socket.broadcast.to(user).emit('new-message', message.chatMsg);
+         });
+
+
+         for (let index = 0; index < socket_ids.length; index++) {
+            var sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message,conversation_id)VALUES('" + from_user_id + "','" + from_user_name + "','" + to_user_id + "','" + to_user_name + "','" + chat_message + "','" + user_ids[index] + "')";
             connection.query(sql, function (err, res) {
-               if (err) return io.emit('error-on-getting-chat message', err);
-               for (let index = 0; index < users.length; index++) {
-                  const user = users[index];
-                  io.to(user).emit('new-message', res);
+               if (err) return io.emit('error-on-adding-chat message', err);
+               sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + from_user_id + "' and from_user_id='" + to_user_id + "') OR (to_user_id='" + to_user_id + "' AND from_user_id='" + from_user_id + "')) AND conversation_id='" + user_ids[index] + "' AND is_block='no'";
+               connection.query(sql, function (err, res) {
+                  if (err) return io.emit('error-on-getting-chat message', err);
+                  const socket_id = socket_ids[index];
+                  io.to(socket_id).emit('new-message', res);
                   //socket.to(user).emit('new-message', message.chatMsg);
                   // socket.broadcast.to(user).emit('new-message', message.chatMsg);
-               }
-            });
-         })
+               });
+            })
+         }
       }
-
    });
 
    socket.on("getChatMessages", (postData) => {
-      sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + postData.from_user_id + "' and from_user_id='" + postData.to_user_id + "') OR (to_user_id='" + postData.to_user_id + "' AND from_user_id='" + postData.from_user_id + "'))";
       let socket_ids = [postData.to_socket_id, postData.from_socket_id];
-      connection.query(sql, function (err, res) {
-         if (err) return io.emit('error-on-getting-chat message', err);
-         for (let index = 0; index < socket_ids.length; index++) {
+      let user_ids = [postData.to_user_id, postData.from_user_id];
+      for (let index = 0; index < socket_ids.length; index++) {
+         sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + postData.from_user_id + "' and from_user_id='" + postData.to_user_id + "') OR (to_user_id='" + postData.to_user_id + "' AND from_user_id='" + postData.from_user_id + "')) AND conversation_id='" + user_ids[index] + "' AND is_block='no'";
+         connection.query(sql, function (err, res) {
+            if (err) return io.emit('error-on-getting-chat message', err);
             const socket_id = socket_ids[index];
             io.to(socket_id).emit('getChatMessages', res);
-         }
-      });
+         });
+      }
    });
 
    socket.on("updateMessageAsRead", (postData) => {
@@ -167,7 +172,8 @@ io.on('connection', (socket) => {
    });
 
    socket.on("getAllUsers", (postData) => {
-      const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,OU.socket_id,(select COUNT(`single_chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND  `is_read`='no' GROUP by to_user_id) AS unread_msg FROM users U LEFT JOIN online_users OU ON U.user_id=OU.user_id";
+      const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,OU.socket_id,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND  `is_read`='no' AND conversation_id='" + postData.from_user_id + "' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE from_user_block_id='"+postData.from_user_id+"' AND to_user_block_id=U.user_id) AS blocked FROM users U LEFT JOIN online_users OU ON U.user_id=U.user_id";
+      console.log(sql);
       connection.query(sql, function (err, res) {
          if (err) return io.emit('error-on-getting-list', err);
          //console.log("Updated Users", res);
@@ -191,28 +197,35 @@ io.on('connection', (socket) => {
 
    //clear the chat
    socket.on('clearChat', (postData) => {
-      sql = "DELETE FROM private_chat WHERE ((to_user_id='" + postData.from_user_id + "' and from_user_id='" + postData.to_user_id + "') OR (to_user_id='" + postData.to_user_id + "' AND from_user_id='" + postData.from_user_id + "'))";
+      sql = "DELETE FROM private_chat WHERE ((to_user_id='" + postData.from_user_id + "' and from_user_id='" + postData.to_user_id + "') OR (to_user_id='" + postData.to_user_id + "' AND from_user_id='" + postData.from_user_id + "')) AND conversation_id='" + postData.from_user_id + "'";
       connection.query(sql, function (err, res) {
-         if (err) return io.emit('error-on-deleting-chat', err);
-         //console.log("Chat Deleted", res);
-         // io.emit('User Deleted', res)
-      })
-
+         if (err) return io.emit('error-on-getting-chat message', err);
+         io.to(postData.from_socket_id).emit('getChatMessages', res);
+      });
    });
 
    socket.on("updateUnreadMsgCount", (postData) => {
       let socket_ids = [postData.to_socket_id, postData.from_socket_id];
-      let users_ids = [postData.to_user_id, postData.from_user_id];
+      let user_ids = [postData.to_user_id, postData.from_user_id];
       for (let index = 0; index < socket_ids.length; index++) {
-         const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,OU.socket_id,(select COUNT(`single_chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + users_ids[index] + "' AND  `is_read`='no' GROUP by to_user_id) AS unread_msg FROM users U LEFT JOIN online_users OU ON U.user_id=OU.user_id";
+         const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,OU.socket_id,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + user_ids[index] + "' AND  `is_read`='no' AND conversation_id='" + user_ids[index] + "' GROUP by to_user_id) AS unread_msg FROM users U LEFT JOIN online_users OU ON U.user_id=OU.user_id";
          connection.query(sql, function (err, res) {
             if (err) return io.emit('error-on-getting-list', err);
             const socket_id = socket_ids[index];
             io.to(socket_id).emit('updateUnreadMsgCount', res);
-
          })
       }
    });
+
+   socket.on("blockUser", (postData) => {
+      sql = "INSERT IGNORE INTO block_user_list(from_block_user_id,to_user_block_id) VALUES('" + postData.from_block_user_id + "','" + postData.to_block_user_id + "')";
+      console.log(sql);
+      connection.query(sql, function (err, res) {
+         if (err) return io.emit('error-on-bloking-user', err);
+         //io.to(postData.from_socket_id).emit('getChatMessages', res);
+      });
+   });
+
 });
 
 server.listen(port, () => {

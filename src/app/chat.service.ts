@@ -22,20 +22,20 @@ export class ChatService {
     this.getAllUsers();
     this.getUpdatedUsers();
   }
-  getAllUsers() {
+  public getAllUsers() {
     let postData = {
       "from_user_id": localStorage.getItem("user_id")
     }
     this.socket.emit("getAllUsers", postData);
   }
-  getUpdatedUsers() {
+  public getUpdatedUsers() {
     this.socket.on('users-list', (message) => {
       this.updatedUsers.next(message);
       console.log("Updated User List", message);
     });
   }
 
-  initConnection() {
+  public initConnection() {
     this.socket.on('connect', () => {
       this.socketID = this.socket.id;
       let postData = {
@@ -71,7 +71,7 @@ export class ChatService {
     });
   }
 
-  updateSocketIdService() {
+  public updateSocketIdService() {
     let postData = {
       "user_id": localStorage.getItem('user_id'),
       "socket_id": this.socketID
@@ -79,7 +79,7 @@ export class ChatService {
     return this.httpclient.post(this.APIPATH + "addSocketId", postData).pipe(map((res: any) => res));
   }
 
-  logoutService() {
+  public logoutService() {
     let postData = {
       "user_id": localStorage.getItem('user_id')
     }
@@ -97,7 +97,7 @@ export class ChatService {
     this.socket.emit('updateUnreadMsgCount',postData);
     this.socket.emit("getChatMessages", postData);
   }
-  setChatMessages() {
+  public setChatMessages() {
     return Observable.create((observer) => {
       this.socket.on('getChatMessages', (responce) => {
         observer.next(responce);
@@ -105,7 +105,7 @@ export class ChatService {
     });
 
   }
-  clearChatService(to_user_id) {
+  public clearChatService(to_user_id) {
     let postData = {
       "from_user_id": localStorage.getItem('user_id'),
       "to_user_id": to_user_id
