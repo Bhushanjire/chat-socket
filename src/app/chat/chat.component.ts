@@ -29,9 +29,11 @@ export class ChatComponent implements OnInit {
   imageFile1: File = null;
   imgHideShow1: boolean = false;
   imgUrl1 = null;
-  postData:any;
-  fileType="";
-  
+  postData: any;
+  fileType = "";
+  blockUnblock: string;
+  blockType: string;
+
 
   constructor(private chatService: ChatService, private route: Router) { }
 
@@ -55,17 +57,15 @@ export class ChatComponent implements OnInit {
       "to_user_id": new FormControl(null, Validators.required),
       "to_user_name": new FormControl(null, Validators.required),
       "socket_id": new FormControl(null),
-      "attachment": new FormControl(null)
+      "attachment": new FormControl(null),
+      "blocked": new FormControl(0),
     });
 
     this.chatService.getMessages().subscribe((message: any) => {
-      console.log("#####", message);
-
       // this.messages.push(message);
       if (message.length > 0) {
         if ((message[0].from_user_id == this.loginUser && message[0].to_user_id == this.showSelectedUser) || (message[0].from_user_id == this.showSelectedUser && message[0].to_user_id == this.loginUser))
           this.messages = message;
-        console.log(message);
       }
     });
 
@@ -82,7 +82,7 @@ export class ChatComponent implements OnInit {
         this.chatMessageDiv = false;
         this.noOnlineUser = true;
       } else {
-        this.userList = res;
+          this.userList = res;
         this.chatMessageDiv = true;
         this.noOnlineUser = false;
       }
@@ -99,8 +99,15 @@ export class ChatComponent implements OnInit {
       "from_user_name": localStorage.getItem('user_name'),
       "to_user_id": userData[0].user_id,
       "to_user_name": userData[0].name,
-      "socket_id": userData[0].socket_id
+      "socket_id": userData[0].socket_id,
+      "blocked": userData[0].blocked == null ? 0 : userData[0].blocked
     });
+
+    if (userData[0].unblock == null) {
+      this.blockUnblock = "Block";
+    } else {
+      this.blockUnblock = "Unblock";
+    }
 
     this.chat_profile_picture = userData[0].profile_picture;
     this.chatService.getChatMessageService(userData[0].user_id, userData[0].socket_id);
@@ -114,7 +121,8 @@ export class ChatComponent implements OnInit {
       "from_user_id": localStorage.getItem('user_id'),
       "from_user_name": localStorage.getItem('user_name'),
       "to_socket_id": data.value.socket_id,
-      "added_date_time": new Date()
+      "added_date_time": new Date(),
+      "is_block": data.value.blocked
     };
 
     this.chatService.sendMessageService(sendData);
@@ -124,10 +132,16 @@ export class ChatComponent implements OnInit {
     this.showEmojiPicker = false;
   }
 
-  blockUser(block_user_id) {
-    this.postData={
-      "from_block_user_id" : localStorage.getItem('user_id'),
-      "to_block_user_id" : block_user_id,
+  blockUser(block_user_id, blockType) {
+    if (blockType == 'Block') {
+      this.blockUnblock = "Unblock";
+    } else if (blockType == 'Unblock') {
+      this.blockUnblock = "Block";
+    }
+    this.postData = {
+      "from_block_user_id": localStorage.getItem('user_id'),
+      "to_block_user_id": block_user_id,
+      "blockType": blockType
     }
     this.chatService.blockUserService(this.postData);
   }
@@ -141,25 +155,16 @@ export class ChatComponent implements OnInit {
   onFileChange(event: any) {
     this.imgHideShow1 = true;
     var target: HTMLInputElement = event.target as HTMLInputElement;
-    for (var i = 0; i < target.files.length; i++) {
-      //this.upload(target.files[i]);
-      this.imageFile1 = target.files[i];
-    }
-    // var reader = new FileReader();
-    // reader.readAsDataURL(this.imageFile1);
-    // reader.onload = (_event) => {
-    //   this.imgUrl1 = reader.result;
-    // }
 
     this.uploadedFiles = event.target.files;
-    this.attachment = this.uploadedFiles[0].name; 
+    this.attachment = this.uploadedFiles[0].name;
 
-    let extension  = this.attachment.split('.').pop();
-   if(extension=='mp4'){
+    let extension = this.attachment.split('.').pop();
+    if (extension == 'mp4') {
       this.fileType = "video"
-   }else{
-    this.fileType = "image"
-   }
+    } else {
+      this.fileType = "image"
+    }
 
     let sendData = {
       "to_user_id": this.chatForm.value.to_user_id,
@@ -168,11 +173,11 @@ export class ChatComponent implements OnInit {
       "from_user_id": localStorage.getItem('user_id'),
       "from_user_name": localStorage.getItem('user_name'),
       "to_socket_id": this.chatForm.value.socket_id,
-      "file_type" : this.fileType,
+      "file_type": this.fileType,
       "added_date_time": new Date()
     };
     this.chatService.sendMessageService(sendData);
-    //this.chatForm.value.attachment=
+    console.log("File Change", event);
   }
 
   logout() {

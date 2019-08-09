@@ -46,8 +46,8 @@
                                     <div class="dropdown-menu dropdown-menu-left">
                                         <div class="dropdown-item handCursor" (click)="clearChat(showSelectedUser)">
                                             Cleare Chat</div>
-                                        <div class="dropdown-item handCursor" (click)="blockUser(showSelectedUser)">
-                                            Block</div>
+                                        <div class="dropdown-item handCursor" (click)="blockUser(showSelectedUser,blockUnblock)">
+                                            {{blockUnblock}}</div>
                                     </div>
                                 </div>
                             </span>
@@ -67,7 +67,7 @@
                         </span>
                         <span *ngSwitchCase="'video'">
                             <video controls #videoPlayer width="100" height="100">
-                                <source src="{{ChatMessages.message}}" type="video/mp4"/>
+                                <source src="{{ChatMessages.message}}" type="video/mp4" />
                                 Browser not supported
                             </video>
                         </span>
@@ -141,6 +141,7 @@
                                     <input type="hidden" formControlName="to_user_id">
                                     <input type="hidden" formControlName="to_user_name">
                                     <input type="hidden" formControlName="socket_id">
+                                    <input type="hidden" formControlName="blocked">
                                     <input type="file" placeholder="attachment" formControlName="attachment"
                                         id="attachment" style="display:none" (change)="onFileChange($event)">
                                     <i class="fa fa-paperclip handCursor" aria-hidden="true"
