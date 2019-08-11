@@ -19,8 +19,6 @@ export class ChatService {
 
   constructor(private httpclient: HttpClient) {
     this.initConnection();
-    this.getAllUsers();
-    this.getUpdatedUsers();
   }
   public getAllUsers() {
     let postData = {
@@ -31,19 +29,21 @@ export class ChatService {
   public getUpdatedUsers() {
     this.socket.on('users-list', (message) => {
       this.updatedUsers.next(message);
-      console.log("Updated User List", message);
     });
   }
 
   public initConnection() {
     this.socket.on('connect', () => {
       this.socketID = this.socket.id;
+      this.socket.user_id = localStorage.getItem('user_id');
       let postData = {
         "user_id": localStorage.getItem('user_id'),
         "user_name": localStorage.getItem('user_name'),
         "socket_id": this.socket.id
       }
       this.socket.emit("addSocketID", postData);
+      this.getAllUsers();
+      this.getUpdatedUsers();
       this.isLoggedIn.next(true);
     });
   }
@@ -60,7 +60,7 @@ export class ChatService {
   public sendMessageService(message) {
     message.from_socket_id = this.socketID;
     this.socket.emit('new-message', message);
-    this.socket.emit('updateUnreadMsgCount',message);
+   // this.socket.emit('updateUnreadMsgCount',message);
   }
 
   public getMessages() {
@@ -69,14 +69,6 @@ export class ChatService {
         observer.next(message);
       });
     });
-  }
-
-  public updateSocketIdService() {
-    let postData = {
-      "user_id": localStorage.getItem('user_id'),
-      "socket_id": this.socketID
-    }
-    return this.httpclient.post(this.APIPATH + "addSocketId", postData).pipe(map((res: any) => res));
   }
 
   public logoutService() {
@@ -125,5 +117,11 @@ export class ChatService {
     this.socket.emit("blockUser",postData)
   }
 
-
+  public deleteMessageService(chat_id){
+    let postData={
+      "chat_id" : chat_id,
+      "user_id" : localStorage.getItem('user_id')
+    }
+    this.socket.emit('deleteMessage',postData);
+  }
 }

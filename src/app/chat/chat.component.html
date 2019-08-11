@@ -19,13 +19,13 @@
                 <li class="list-group-item userList"
                     [ngClass]="userData.user_id==showSelectedUser ? 'header-list-item activatedUser' : '' "
                     *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
-                    <span class="dot" *ngIf="userData.socket_id!=null"></span>
+                    <span class="dot" *ngIf="userData.is_active=='yes'"></span>
                     <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list"
                         alt="{{userData.name}}">
                     &nbsp; {{userData.name}}
                     <span *ngIf="userData.unread_msg!=null" class="badge badge-success"
                         style="float: right">{{userData.unread_msg}}</span>
-                    <div *ngIf="userData.socket_id!=null" style="margin-bottom: -21px;">
+                    <div *ngIf="userData.is_active=='yes'" style="margin-bottom: -21px;">
                         <sub class="text-muted activeUser">Active</sub>
                     </div>
                     <!-- <small class="text-muted" *ngIf="userData.socket_id!=null">Active</small> -->
@@ -61,7 +61,10 @@
                     <div *ngFor="let ChatMessages of messages"
                         [ngClass]="ChatMessages.from_user_id==loginUser ? 'from-message': 'to-message'"
                         (contextmenu)="onRightClick(ChatMessages.single_chat_id)"
-                        [ngSwitch]="ChatMessages.message_type">
+                        [ngSwitch]="ChatMessages.message_type" 
+                        (mouseover)="actionOnMsg(ChatMessages.chat_id)" 
+                        (mouseout)="actionOnMsg(0)"
+                        >
                         <span *ngSwitchCase="'text'">
                             {{ChatMessages.message}}
                         </span>
@@ -117,6 +120,22 @@
                                     </g>
                                 </svg>
                             </span>
+                        </span>
+                        <span style="float: right" >
+                            <div class="dropdown"  >
+                                <i class="fa fa-ellipsis-v handCursor" data-toggle="dropdown"
+                                    aria-hidden="true" style="color: white" ></i>
+                                <div class="dropdown-menu dropdown-menu-left">
+                                        <div class="dropdown-item handCursor" (click)="editMsg(ChatMessages.chat_id)">
+                                                Edit</div>
+                                    <div class="dropdown-item handCursor" (click)="copyMsg(ChatMessages.chat_id)">
+                                        Copy</div>
+                                        <div class="dropdown-item handCursor" (click)="forwordMsg(ChatMessages.chat_id)">
+                                                Forword</div>
+                                    <div class="dropdown-item handCursor" (click)="removeMsg(ChatMessages.chat_id)">
+                                        Remove</div>
+                                </div>
+                            </div>   
                         </span>
                     </div>
                 </div>

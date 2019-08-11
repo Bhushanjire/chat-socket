@@ -42,49 +42,20 @@ const port = process.env.PORT || 3000;
 io.on('connection', (socket) => {
    // console.log("Socket ID=>>>>",socket);
    socket.on("addSocketID", (postData) => {
-      // console.log('user connected', postData);
+      userModel.updateSocketID(function(err,res){
+         socket.user_id = postData.user_id;
+      },postData);
    });
 
    socket.on('new-message', (postData) => {
       console.log("Send message Details", postData);
-      let socket_ids = [postData.to_socket_id, postData.from_socket_id];
-      let user_ids = [postData.to_user_id, postData.from_user_id];
-
       //insert chat message
       if (postData.file_type == "image") {
          cloudinary.uploader.upload(postData.message,
             function (error, result) {
                if (error) { console.log("Error on file upload", error); } else {
-                  is_read = 'no';
-                  is_block = 'no';
-                  for (let index = 0; index < socket_ids.length; index++) {
-                     if (postData.is_block > 0) {
-                        if (postData.to_user_id == user_ids[index]) {
-                           is_block = 'yes';
-                        } else {
-                           is_block = 'no';
-                        }
-                        is_read = 'yes';
-                     }
-                     postData.is_block = is_block;
-                     postData.is_read = is_read;
-                     postData.conversation_id = user_ids[index];
                      postData.message_type = result.resource_type;
                      postData.message = result.secure_url;
-                     userModel.insertChatMessage(function (err, res) {
-                        if (err) {
-                           return io.emit('error-on-adding-chat message', err);
-                        } else {
-                           userModel.getChatMessages(function (err, res) {
-                              if (err) {
-                                 return io.emit('error-on-getting-chat message', err);
-                              } else {
-                                 io.to(socket_ids[index]).emit('new-message', res);
-                              }
-                           }, postData);
-                        }
-                     }, postData);
-                  }
                }
             });
       } else if (postData.file_type == "video") {
@@ -101,97 +72,77 @@ io.on('connection', (socket) => {
             },
             function (error, result) {
                if (error) { console.log("Error on file upload", error); } else {
-                  is_read = 'no';
-                  is_block = 'no';
-                  for (let index = 0; index < socket_ids.length; index++) {
-                     if (postData.is_block > 0) {
-                        if (postData.to_user_id == user_ids[index]) {
-                           is_block = 'yes';
-                        } else {
-                           is_block = 'no';
-                        }
-                        is_read = 'yes';
-                     }
-                     postData.is_block = is_block;
-                     postData.is_read = is_read;
-                     postData.conversation_id = user_ids[index];
                      postData.message_type = result.resource_type;
                      postData.message = result.secure_url;
+                     sendMessage(postData);
+               }
+            });
+      } else {
+         sendMessage(postData);
+      }
+   });
+
+   function sendMessage(postData){
+      userModel.checkUserBlock(function (err, res) {
+         if (err) {
+            return io.emit('error-on-checking block user-chat message', err);
+         } else {
+          const block_user_id = res[0] ? res[0].from_user_id : 0;
+
+          userModel.getSocketID(function(err,userDetails){
+            for (let index = 0; index < userDetails.length; index++) {
+                        postData.is_block = 'no';
+                        postData.is_read = 'no';
+                        postData.conversation_id = userDetails[index].user_id;
+                        postData.message_type = 'text';
+                           if(block_user_id==postData.conversation_id){
+                              postData.is_block = 'yes';
+                           }
                      userModel.insertChatMessage(function (err, res) {
                         if (err) {
                            return io.emit('error-on-adding-chat message', err);
                         } else {
+                           postData.conversation_id = userDetails[index].user_id;
                            userModel.getChatMessages(function (err, res) {
                               if (err) {
                                  return io.emit('error-on-getting-chat message', err);
                               } else {
-                                 io.to(socket_ids[index]).emit('new-message', res);
+                                 //console.log("socketID",)
+                                 io.to(userDetails[index].socket_id).emit('new-message', res);
+                                 postData.conversation_id = userDetails[index].user_id;
+                                 //console.log(postData.conversation_id);
+                                  userModel.getAllUser(function (err, res) {
+            if (err) {
+               return io.emit('error-on-getting-list', err);
+            } else {
+               io.to(userDetails[index].socket_id).emit('users-list', res);
+               //io.emit('users-list', res);
+            }
+         }, postData);
                               }
                            }, postData);
                         }
                      }, postData);
-                  }
-               }
-            });
-      } else {
-         for (let index = 0; index < socket_ids.length; index++) {
-            
-            postData.conversation_id = user_ids[index];
-            postData.message_type = 'text';
-
-            userModel.checkUserBlock(function (err, res) {
-               if (err) {
-                  return io.emit('error-on-checking block user-chat message', err);
-               } else {
-                  console.log("block User",res);
-                  if (res.to_user_block_id) {
-                     if (postData.from_user_block_id == user_ids[index]) {
-                        postData.is_block = 'yes';
-                        postData.is_read = 'yes';
-                     }else{
-                        postData.is_block = 'no';
-                        postData.is_read = 'no';
-                     }
-                  }else{
-                     postData.is_block = 'no';
-                     postData.is_read = 'no';
-                  }
-                  postData.is_block = 'no';
-                     postData.is_read = 'no';
-                  userModel.insertChatMessage(function (err, res) {
-                     if (err) {
-                        return io.emit('error-on-adding-chat message', err);
-                     } else {
-                        userModel.getChatMessages(function (err, res) {
-                           if (err) {
-                              return io.emit('error-on-getting-chat message', err);
-                           } else {
-                              io.to(socket_ids[index]).emit('new-message', res);
-                           }
-                        }, postData);
-                     }
-                  }, postData);
-               }
-            },postData);
+            }
+         },postData);   
          }
-      }
-   });
-
+      },postData);
+   }
 
    //return the private chat messages
    socket.on("getChatMessages", (postData) => {
-      let socket_ids = [postData.to_socket_id, postData.from_socket_id];
-      let user_ids = [postData.to_user_id, postData.from_user_id];
-      for (let index = 0; index < socket_ids.length; index++) {
-         postData.conversation_id = user_ids[index];
-         userModel.getChatMessages(function (err, res) {
+      userModel.getSocketID(function(err,userDetails){
+         for(let index=0;index<userDetails.length;index++){
+            postData.conversation_id = userDetails[index].user_id;
+         userModel.getChatMessages(function (err, chatList) {
             if (err) {
                return io.emit('error-on-getting-chat message', err);
             } else {
-               io.to(socket_ids[index]).emit('getChatMessages', res);
+                  io.to(userDetails[index].socket_id).emit('getChatMessages', chatList);
             }
          }, postData);
-      }
+         }
+      }, postData);
    });
 
    //update message status as a read
@@ -227,7 +178,14 @@ io.on('connection', (socket) => {
 
    //called when user closed the browser or disconnect
    socket.on('disconnect', (reason) => {
-      console.log("user disconnetd", socket.id);
+      userModel.disConnectUser(function(err,res){
+      if(err){
+          throw err;
+      }else{
+         console.log("user disconnetd", socket.id);
+      }
+      },socket.id);
+      
    });
 
    //clear the chat
@@ -249,7 +207,7 @@ io.on('connection', (socket) => {
          postData.conversation_id = user_ids[index];
          userModel.getAllUser(function (err, res) {
             if (err) {
-               return io.emit('error-on-getting-list', err);
+               io.to(socket_ids[index]).emit('error-on-getting-list', err);
             } else {
                io.to(socket_ids[index]).emit('updateUnreadMsgCount', res);
             }
@@ -266,6 +224,21 @@ io.on('connection', (socket) => {
          }
       }, postData);
    });
+
+   //delete single message
+   socket.on("deleteMessage",(postData)=>{
+     userModel.deleteMessage(function(err,res){
+        if(err){
+           //io.to().emit("Error-on-deleting messages");
+        }else{
+         //io.to().emit("deleteMessage",res);
+        }
+     },postData) 
+
+   });
+
+   
+
 });
 
 server.listen(port, () => {
