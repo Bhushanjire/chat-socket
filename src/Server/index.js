@@ -42,9 +42,9 @@ const port = process.env.PORT || 3000;
 io.on('connection', (socket) => {
    // console.log("Socket ID=>>>>",socket);
    socket.on("addSocketID", (postData) => {
-      userModel.updateSocketID(function(err,res){
+      userModel.updateSocketID(function (err, res) {
          socket.user_id = postData.user_id;
-      },postData);
+      }, postData);
    });
 
    socket.on('new-message', (postData) => {
@@ -54,8 +54,10 @@ io.on('connection', (socket) => {
          cloudinary.uploader.upload(postData.message,
             function (error, result) {
                if (error) { console.log("Error on file upload", error); } else {
-                     postData.message_type = result.resource_type;
-                     postData.message = result.secure_url;
+                  //console.log("Image upload=>",result);
+                  postData.message_type = result.resource_type;
+                  postData.message = result.secure_url;
+                  sendMessage(postData);
                }
             });
       } else if (postData.file_type == "video") {
@@ -72,32 +74,55 @@ io.on('connection', (socket) => {
             },
             function (error, result) {
                if (error) { console.log("Error on file upload", error); } else {
-                     postData.message_type = result.resource_type;
-                     postData.message = result.secure_url;
-                     sendMessage(postData);
+                  postData.message_type = result.resource_type;
+                  postData.message = result.secure_url;
+                  sendMessage(postData);
                }
             });
       } else {
+         postData.message_type = 'text';
          sendMessage(postData);
       }
    });
 
-   function sendMessage(postData){
-      userModel.checkUserBlock(function (err, res) {
-         if (err) {
-            return io.emit('error-on-checking block user-chat message', err);
-         } else {
-          const block_user_id = res[0] ? res[0].from_user_id : 0;
+   function sendMessage(postData) {
+      console.log(postData);
+      if (postData.chat_id > 0) {
+         userModel.updateMessage(function (err, res) {
+            if(err){
+               return io.emit('error-on-updating message', err);
+            }else{
+               userModel.getSocketID(function (err, userDetails) {
+                  for (let index = 0; index < userDetails.length; index++) {
+                     postData.conversation_id = userDetails[index].user_id;
+                     userModel.getChatMessages(function (err, chatList) {
+                        if (err) {
+                           return io.emit('error-on-getting-chat message', err);
+                        } else {
+                           io.to(userDetails[index].socket_id).emit('getChatMessages', chatList);
+                        }
+                     }, postData);
+                  }
+               }, postData);
+            }
 
-          userModel.getSocketID(function(err,userDetails){
-            for (let index = 0; index < userDetails.length; index++) {
-                        postData.is_block = 'no';
-                        postData.is_read = 'no';
-                        postData.conversation_id = userDetails[index].user_id;
-                        postData.message_type = 'text';
-                           if(block_user_id==postData.conversation_id){
-                              postData.is_block = 'yes';
-                           }
+         }, postData);
+      } else {
+         userModel.checkUserBlock(function (err, res) {
+            if (err) {
+               return io.emit('error-on-checking block user-chat message', err);
+            } else {
+               const block_user_id = res[0] ? res[0].from_user_id : 0;
+
+               userModel.getSocketID(function (err, userDetails) {
+                  for (let index = 0; index < userDetails.length; index++) {
+                     postData.is_block = 'no';
+                     postData.is_read = 'no';
+                     postData.conversation_id = userDetails[index].user_id;
+                     //postData.message_type = 'text';
+                     if (block_user_id == postData.conversation_id) {
+                        postData.is_block = 'yes';
+                     }
                      userModel.insertChatMessage(function (err, res) {
                         if (err) {
                            return io.emit('error-on-adding-chat message', err);
@@ -111,36 +136,37 @@ io.on('connection', (socket) => {
                                  io.to(userDetails[index].socket_id).emit('new-message', res);
                                  postData.conversation_id = userDetails[index].user_id;
                                  //console.log(postData.conversation_id);
-                                  userModel.getAllUser(function (err, res) {
-            if (err) {
-               return io.emit('error-on-getting-list', err);
-            } else {
-               io.to(userDetails[index].socket_id).emit('users-list', res);
-               //io.emit('users-list', res);
-            }
-         }, postData);
+                                 userModel.getAllUser(function (err, res) {
+                                    if (err) {
+                                       return io.emit('error-on-getting-list', err);
+                                    } else {
+                                       io.to(userDetails[index].socket_id).emit('users-list', res);
+                                       //io.emit('users-list', res);
+                                    }
+                                 }, postData);
                               }
                            }, postData);
                         }
                      }, postData);
+                  }
+               }, postData);
             }
-         },postData);   
-         }
-      },postData);
+         }, postData);
+      }
    }
 
    //return the private chat messages
    socket.on("getChatMessages", (postData) => {
-      userModel.getSocketID(function(err,userDetails){
-         for(let index=0;index<userDetails.length;index++){
+      userModel.getSocketID(function (err, userDetails) {
+         for (let index = 0; index < userDetails.length; index++) {
             postData.conversation_id = userDetails[index].user_id;
-         userModel.getChatMessages(function (err, chatList) {
-            if (err) {
-               return io.emit('error-on-getting-chat message', err);
-            } else {
+            userModel.getChatMessages(function (err, chatList) {
+               if (err) {
+                  return io.emit('error-on-getting-chat message', err);
+               } else {
                   io.to(userDetails[index].socket_id).emit('getChatMessages', chatList);
-            }
-         }, postData);
+               }
+            }, postData);
          }
       }, postData);
    });
@@ -178,14 +204,14 @@ io.on('connection', (socket) => {
 
    //called when user closed the browser or disconnect
    socket.on('disconnect', (reason) => {
-      userModel.disConnectUser(function(err,res){
-      if(err){
-          throw err;
-      }else{
-         console.log("user disconnetd", socket.id);
-      }
-      },socket.id);
-      
+      userModel.disConnectUser(function (err, res) {
+         if (err) {
+            throw err;
+         } else {
+            console.log("user disconnetd", socket.id);
+         }
+      }, socket.id);
+
    });
 
    //clear the chat
@@ -226,18 +252,18 @@ io.on('connection', (socket) => {
    });
 
    //delete single message
-   socket.on("deleteMessage",(postData)=>{
-     userModel.deleteMessage(function(err,res){
-        if(err){
-           //io.to().emit("Error-on-deleting messages");
-        }else{
-         //io.to().emit("deleteMessage",res);
-        }
-     },postData) 
+   socket.on("deleteMessage", (postData) => {
+      userModel.deleteMessage(function (err, res) {
+         if (err) {
+            //io.to().emit("Error-on-deleting messages");
+         } else {
+            //io.to().emit("deleteMessage",res);
+         }
+      }, postData)
 
    });
 
-   
+
 
 });
 

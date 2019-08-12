@@ -15,22 +15,32 @@
     </div>
     <div class="row" *ngIf="chatMessageDiv">
         <div class="col-md-4">
-            <ul class="list-group" *ngFor="let userData of userList;let i = index ">
-                <li class="list-group-item userList"
-                    [ngClass]="userData.user_id==showSelectedUser ? 'header-list-item activatedUser' : '' "
-                    *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
-                    <span class="dot" *ngIf="userData.is_active=='yes'"></span>
-                    <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list"
-                        alt="{{userData.name}}">
-                    &nbsp; {{userData.name}}
-                    <span *ngIf="userData.unread_msg!=null" class="badge badge-success"
-                        style="float: right">{{userData.unread_msg}}</span>
-                    <div *ngIf="userData.is_active=='yes'" style="margin-bottom: -21px;">
-                        <sub class="text-muted activeUser">Active</sub>
-                    </div>
-                    <!-- <small class="text-muted" *ngIf="userData.socket_id!=null">Active</small> -->
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <input type="input" class="searchInput" placeholder="Search contacts" id="searchInput"
+                        [(ngModel)]="searchText">
                 </li>
             </ul>
+            <div class="contact-list-div">
+                <ul class="list-group" *ngFor="let userData of userList | searchData :searchText ;let i = index ">
+                    <li class="list-group-item userList"
+                        [ngClass]="userData.user_id==showSelectedUser ? 'header-list-item activatedUser' : '' "
+                        *ngIf="userData.user_id!=loginUser" (click)="getUser(userData)">
+                        <span class="dot" *ngIf="userData.is_active=='yes'"></span>
+                        <img src="{{userData?.profile_picture}}" class="avatar profile-picture-list"
+                            alt="{{userData.name}}">
+                        &nbsp; {{userData.name}}
+                        <span *ngIf="userData.unread_msg!=null" class="badge badge-success"
+                            style="float: right">{{userData.unread_msg}}</span>
+                        <div *ngIf="userData.is_active=='yes'" style="margin-bottom: -21px;">
+                            <sub class="text-muted activeUser">Active</sub>
+                        </div>
+                        <div *ngIf="userData.is_active=='no'" style="margin-bottom: -21px;">
+                            <sub class="text-muted activeUser">{{userData.last_login |date: 'dd/mm/yyyy' }}</sub>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="col-md-8">
             <div class="row chatHeader">
@@ -46,7 +56,8 @@
                                     <div class="dropdown-menu dropdown-menu-left">
                                         <div class="dropdown-item handCursor" (click)="clearChat(showSelectedUser)">
                                             Cleare Chat</div>
-                                        <div class="dropdown-item handCursor" (click)="blockUser(showSelectedUser,blockUnblock)">
+                                        <div class="dropdown-item handCursor"
+                                            (click)="blockUser(showSelectedUser,blockUnblock)">
                                             {{blockUnblock}}</div>
                                     </div>
                                 </div>
@@ -56,15 +67,11 @@
                 </div>
             </div>
             <div class="row chatMessage">
-
                 <div class="col-md-12">
                     <div *ngFor="let ChatMessages of messages"
                         [ngClass]="ChatMessages.from_user_id==loginUser ? 'from-message': 'to-message'"
-                        (contextmenu)="onRightClick(ChatMessages.single_chat_id)"
-                        [ngSwitch]="ChatMessages.message_type" 
-                        (mouseover)="actionOnMsg(ChatMessages.chat_id)" 
-                        (mouseout)="actionOnMsg(0)"
-                        >
+                        (contextmenu)="onRightClick(ChatMessages.single_chat_id)" [ngSwitch]="ChatMessages.message_type"
+                        (mouseover)="actionOnMsg(ChatMessages.chat_id)" (mouseout)="actionOnMsg(0)" (dblclick)="likeMsg()">
                         <span *ngSwitchCase="'text'">
                             {{ChatMessages.message}}
                         </span>
@@ -75,11 +82,9 @@
                             </video>
                         </span>
                         <span *ngSwitchCase="'image'">
-                            <img src="{{ChatMessages.message}}" width="50" height="50">
+                            <img src="{{ChatMessages.message}}" width="50" height="50" id="myImg">
                         </span>
 
-                        <!-- <span [innerHTML]="ChatMessages.message | keepHtml"></span> -->
-                        <!-- <div (click)="test(ChatMessages.message)">{{ChatMessages.message}}</div> -->
                         <span
                             class="text-muted"><small>{{ChatMessages.added_date_time | date : 'dd-MMM-yy h:mm a'}}</small></span>
                         &nbsp;
@@ -121,32 +126,36 @@
                                 </svg>
                             </span>
                         </span>
-                        <span style="float: right" >
-                            <div class="dropdown"  >
-                                <i class="fa fa-ellipsis-v handCursor" data-toggle="dropdown"
-                                    aria-hidden="true" style="color: white" ></i>
+
+                       <!-- <span style="float: right">
+                            <i class="fa fa-heart heart-like" aria-hidden="true" ></i>
+                       </span> -->
+                        
+                        <span style="float: right">
+                            <div class="dropdown">
+                                <i class="fa fa-ellipsis-v handCursor" data-toggle="dropdown" aria-hidden="true"
+                                    style="color: white"></i>
                                 <div class="dropdown-menu dropdown-menu-left">
-                                        <div class="dropdown-item handCursor" (click)="editMsg(ChatMessages.chat_id)">
-                                                Edit</div>
-                                    <div class="dropdown-item handCursor" (click)="copyMsg(ChatMessages.chat_id)">
+                                    <div class="dropdown-item handCursor" (click)="editMsg(ChatMessages.chat_id)" *ngIf="ChatMessages.from_user_id==loginUser">
+                                        Edit</div>
+                                    <div class="dropdown-item handCursor" ngxClipboard
+                                        [cbContent]="ChatMessages.message"
+                                        (cbOnSuccess)="copyMsg($event,ChatMessages.chat_id)">
                                         Copy</div>
-                                        <div class="dropdown-item handCursor" (click)="forwordMsg(ChatMessages.chat_id)">
-                                                Forword</div>
+                                    <div class="dropdown-item handCursor" (click)="forwordMsg(ChatMessages.chat_id)">
+                                        Forword</div>
                                     <div class="dropdown-item handCursor" (click)="removeMsg(ChatMessages.chat_id)">
                                         Remove</div>
                                 </div>
-                            </div>   
+                            </div>
                         </span>
                     </div>
                 </div>
             </div>
             <div class="row mt-3" *ngIf="chatFormDiv">
-
                 <div class="col-md-12">
-
                     <emoji-mart color="#FFFF99" class="emoji-mart" set="apple" (emojiSelect)="addEmoji($event)"
                         *ngIf="showEmojiPicker" title="Pick your emoji…"></emoji-mart>
-
                     <form [formGroup]="chatForm" (ngSubmit)="sendMessage(chatForm)">
                         <div class="row">
                             <div class="col-md-8">
@@ -155,6 +164,8 @@
                                         (click)="toggleEmojiPicker()"></i>
                                     <input type="input" formControlName="message" class="inputMsg"
                                         placeholder="Type a message">
+                                    <input type="hidden" formControlName="chat_id">
+                                    <input type="hidden" formControlName="edit_message">
                                     <input type="hidden" formControlName="from_user_id">
                                     <input type="hidden" formControlName="from_user_name">
                                     <input type="hidden" formControlName="to_user_id">
@@ -163,9 +174,16 @@
                                     <input type="hidden" formControlName="blocked">
                                     <input type="file" placeholder="attachment" formControlName="attachment"
                                         id="attachment" style="display:none" (change)="onFileChange($event)">
-                                    <i class="fa fa-paperclip handCursor" aria-hidden="true"
-                                        (click)="openAttchment($event)"></i>
+                                    <span *ngIf="paperclip">
+                                        <i class="fa fa-paperclip handCursor" aria-hidden="true"
+                                            (click)="openAttchment($event)"></i>
+                                    </span>
+                                    <span *ngIf="times" (click)="paperclip_times()">
+                                        <i class="fa fa-times handCursor" aria-hidden="true" title="Cancel edit"></i>
+                                    </span>
                                 </div>
+                                
+                                <span class="clipboard" *ngIf="clipboard" (click)="clipboard=false">Copy to clipboard</span>
                             </div>
                             <div class="col-md-4"><button type="submit" class="btn btn-primary"
                                     [disabled]="chatForm.invalid">Send</button></div>

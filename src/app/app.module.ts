@@ -16,10 +16,14 @@ import { EmojiModule } from '@ctrl/ngx-emoji-mart/ngx-emoji'
 
 import { EscapeHtmlPipe } from './pipes/keep-html.pipe';
 import { EscapeCssPipe } from './pipes/keep-css.pipe';
+import {SearchPipe} from '../app/pipes/search.pipe';
 
+
+import { ClipboardModule } from 'ngx-clipboard';
 
 import { ChatService } from './chat.service';
-
+import { ForwordMsgModelComponent } from './forword-msg-model/forword-msg-model.component';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   declarations: [
@@ -28,7 +32,9 @@ import { ChatService } from './chat.service';
     SigninComponent,
     ChatComponent,
     EscapeHtmlPipe,
-    EscapeCssPipe
+    EscapeCssPipe,
+    SearchPipe,
+    ForwordMsgModelComponent
   ],
   imports: [
     BrowserModule,
@@ -37,9 +43,12 @@ import { ChatService } from './chat.service';
     ReactiveFormsModule,
     FormsModule,
     PickerModule,
-    EmojiModule
+    EmojiModule,
+    ClipboardModule,
+    NgbModule
   ],
   providers: [ChatService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [ForwordMsgModelComponent],
 })
 export class AppModule { }

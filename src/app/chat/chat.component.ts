@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ChatService } from '../chat.service';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-
+import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
+import { ForwordMsgModelComponent } from '../forword-msg-model/forword-msg-model.component';
 
 @Component({
   selector: 'app-chat',
@@ -33,9 +34,13 @@ export class ChatComponent implements OnInit {
   fileType = "";
   blockUnblock: string;
   blockType: string;
-  actionOnMessage :any;
-
+  actionOnMessage: any;
+  clipboard = false;
+  paperclip = true;
+  times = false;
+  closeResult: string;
   constructor(private chatService: ChatService, private route: Router) { }
+  // ,private modalService: NgbModal
 
   ngOnInit() {
     this.loginUser = localStorage.getItem('user_id');
@@ -51,19 +56,21 @@ export class ChatComponent implements OnInit {
       "socket_id": new FormControl(null),
       "attachment": new FormControl(null),
       "blocked": new FormControl(0),
+      "chat_id": new FormControl(0),
+      "edit_message": new FormControl()
     });
 
     this.chatService.getMessages().subscribe((responce: any) => {
-       //this.messages.push(message);
+      //this.messages.push(message);
       if (responce.length > 0) {
-        if ((responce[0].from_user_id == this.loginUser && responce[0].to_user_id == this.showSelectedUser) || (responce[0].from_user_id == this.showSelectedUser && responce[0].to_user_id == this.loginUser)){
+        if ((responce[0].from_user_id == this.loginUser && responce[0].to_user_id == this.showSelectedUser) || (responce[0].from_user_id == this.showSelectedUser && responce[0].to_user_id == this.loginUser)) {
           this.messages = responce;
-        }else{
+        } else {
           this.messages = [];
         }
-      }else{
-         this.messages = [];
-       }
+      } else {
+        this.messages = [];
+      }
     });
 
     this.chatService.updateUnreadMsgCount().subscribe(responce => {
@@ -71,15 +78,15 @@ export class ChatComponent implements OnInit {
     });
 
     this.chatService.setChatMessages().subscribe((responce: any) => {
-      if(responce.length>0){
-         if ((responce[0].from_user_id == this.loginUser && responce[0].to_user_id == this.showSelectedUser) || (responce[0].from_user_id == this.showSelectedUser && responce[0].to_user_id == this.loginUser)){
+      if (responce.length > 0) {
+        if ((responce[0].from_user_id == this.loginUser && responce[0].to_user_id == this.showSelectedUser) || (responce[0].from_user_id == this.showSelectedUser && responce[0].to_user_id == this.loginUser)) {
           this.messages = responce;
-         }else{
-           this.messages = [];
-         }
-        }else{
-           this.messages = [];
-         }
+        } else {
+          this.messages = [];
+        }
+      } else {
+        this.messages = [];
+      }
     });
 
     this.chatService.updatedUsers.subscribe((res) => {
@@ -87,12 +94,19 @@ export class ChatComponent implements OnInit {
         this.chatMessageDiv = false;
         this.noOnlineUser = true;
       } else {
-          this.userList = res;
+        this.userList = res;
         this.chatMessageDiv = true;
         this.noOnlineUser = false;
       }
     });
   }
+
+  open() {
+    const modalRef = this.modalService.open(ForwordMsgModelComponent);
+    modalRef.componentInstance.name = 'World';
+  }
+
+
   getUser(userData) {
     this.chatFormDiv = true;
     this.selectedUser = userData.name;
@@ -105,7 +119,8 @@ export class ChatComponent implements OnInit {
       "to_user_id": userData.user_id,
       "to_user_name": userData.name,
       "socket_id": userData.socket_id,
-      "blocked": userData.blocked == null ? 0 : userData.blocked
+      "blocked": userData.blocked == null ? 0 : userData.blocked,
+
     });
 
     if (userData.unblock == null) {
@@ -119,7 +134,7 @@ export class ChatComponent implements OnInit {
     this.showSelectedUser = userData.user_id;
   }
   sendMessage(data) {
-    if(this.blockUnblock=="Unblock"){
+    if (this.blockUnblock == "Unblock") {
       alert("Unblock,to send the message");
       return false;
     }
@@ -131,14 +146,20 @@ export class ChatComponent implements OnInit {
       "from_user_name": localStorage.getItem('user_name'),
       "to_socket_id": data.value.socket_id,
       "added_date_time": new Date(),
-      "is_block": data.value.blocked
+      "is_block": data.value.blocked,
+      "chat_id": data.value.chat_id,
+      "edit_message": data.value.edit_message
     };
 
     this.chatService.sendMessageService(sendData);
     this.chatForm.patchValue({
       "message": "",
+      "chat_id": 0,
+      "edit_message": "",
     });
     this.showEmojiPicker = false;
+    this.paperclip=true;
+    this.times=false;
   }
 
   blockUser(block_user_id, blockType) {
@@ -148,8 +169,8 @@ export class ChatComponent implements OnInit {
       "blockType": blockType
     }
     if (blockType == 'Block') {
-      let confirmRes = confirm("Block "+this.chatForm.value.to_user_name+"? Blocked contacts will no longer be able to send you messages.");
-      if(confirmRes){
+      let confirmRes = confirm("Block " + this.chatForm.value.to_user_name + "? Blocked contacts will no longer be able to send you messages.");
+      if (confirmRes) {
         this.blockUnblock = "Unblock";
         this.chatService.blockUserService(this.postData);
       }
@@ -190,7 +211,7 @@ export class ChatComponent implements OnInit {
       "added_date_time": new Date()
     };
     this.chatService.sendMessageService(sendData);
-    console.log("File Change", event);
+    console.log("File Change",  event);
   }
 
   logout() {
@@ -215,27 +236,59 @@ export class ChatComponent implements OnInit {
   onRightClick(messageID) {
     return false;
   }
-  actionOnMsg(chat_id){
+  actionOnMsg(chat_id) {
     this.actionOnMessage = chat_id;
   }
-  editMsg(chat_id){
-    let chatArray = this.messages.filter(function( obj ) {
-      return obj.chat_id ==chat_id;
-  });
-  console.log("chat array="+chatArray);
-  //this.messages=chatArray;
-  }
-  copyMsg(chat_id){
+  editMsg(chat_id) {
+    const editMsg = this.messages.filter(function (obj) {
+      return obj.chat_id == chat_id;
+    });
+this.paperclip=false;
+this.times=true;
+
+    this.chatForm.patchValue({
+      "message": editMsg[0].message,
+      "chat_id": editMsg[0].chat_id,
+      "edit_message": editMsg[0].message
+    });
 
   }
-  forwordMsg(chat_id){
+  copyMsg(event, chat_id) {
+    if (event.isSuccess) {
+      this.clipboard = true;
+      setTimeout(() => {
+        this.clipboard = false;
+      }, 3000);
+    }
+  }
+
+  forwordMsg(chat_id) {
 
   }
-  removeMsg(chat_id){
-   let chatArray = this.messages.filter(function( obj ) {
-      return obj.chat_id !==chat_id;
-  });
-  this.messages=chatArray;
-    this.chatService.deleteMessageService(chat_id);
+  removeMsg(chat_id) {
+    let confirmRes = confirm("Are you sure you want to remove this message?");
+    if (confirmRes) {
+      let chatArray = this.messages.filter(function (obj) {
+        return obj.chat_id !== chat_id;
+      });
+      this.messages = chatArray;
+      this.chatService.deleteMessageService(chat_id);
+    } else {
+      return false;
+    }
   }
+  paperclip_times(){
+    this.paperclip=true;
+    this.times=false;
+    this.chatForm.patchValue({
+      "message" : '',
+      "chat_id": 0,
+      "edit_message": ''
+    })
+  }
+
+  likeMsg(){
+    console.log("like called");
+  }
+
 }

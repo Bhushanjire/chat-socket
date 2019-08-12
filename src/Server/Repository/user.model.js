@@ -16,7 +16,7 @@ User.getAllUser = function (callback, postData) {
   if (postData.conversation_id) {
     postData.from_user_id = postData.conversation_id;
   }
-  const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,U.socket_id,U.is_active,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND  `is_read`='no' AND is_block='no'  AND conversation_id='" + postData.from_user_id + "' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='" + postData.from_user_id + "' AND from_user_id=U.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='" + postData.from_user_id + "' AND to_user_id=U.user_id) AS unblock FROM users U";
+  const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,U.socket_id,U.is_active,U.last_login,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND  `is_read`='no' AND is_block='no'  AND conversation_id='" + postData.from_user_id + "' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='" + postData.from_user_id + "' AND from_user_id=U.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='" + postData.from_user_id + "' AND to_user_id=U.user_id) AS unblock FROM users U";
   //console.log("All User",sql);
   connection.query(sql, function (err, userList) {
     return err ? callback(err, null) : callback(null, userList);
@@ -35,7 +35,7 @@ User.insertChatMessage = function (callback, postData) {
   const sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message,message_type,conversation_id,is_block,is_read)VALUES('" + postData.from_user_id + "','" + postData.from_user_name + "','" + postData.to_user_id + "','" + postData.to_user_name + "','" + postData.message + "','" + postData.message_type + "','" + postData.conversation_id + "','" + postData.is_block + "','" + postData.is_read + "')";
   //console.log("Chat Insert Query=>", sql);
   connection.query(sql, function (err, chatList) {
-    return err ? callback(err, null) : callback(null, chatList);
+    return err ? callback(err, null) : callback(null, chatList.chat_id);
   });
 }
 
@@ -55,7 +55,7 @@ User.deleteUser = function (callback, postData) {
 
 User.clearChat = function (callback, postData) {
   const sql = "DELETE FROM private_chat WHERE ((to_user_id='" + postData.from_user_id + "' and from_user_id='" + postData.to_user_id + "') OR (to_user_id='" + postData.to_user_id + "' AND from_user_id='" + postData.from_user_id + "')) AND conversation_id='" + postData.from_user_id + "'";
-  console.log("Clear Chat",sql);
+ // console.log("Clear Chat",sql);
   connection.query(sql, function (err, chatList) {
     return err ? callback(err, null) : callback(null, chatList);
   });
@@ -78,7 +78,7 @@ User.blockUser = function (callback, postData) {
 
 User.checkUserBlock = function(callback,postData){
   const sql = "SELECT * FROM block_user_list WHERE from_user_id='" + postData.to_user_id + "' AND to_user_id='" + postData.from_user_id + "'";
-  console.log("Check block user",sql);
+  //console.log("Check block user",sql);
   connection.query(sql, function (err, res,fields) {
     return err ? callback(err, null) : callback(null, res);
   });
@@ -138,6 +138,18 @@ User.addSocketIdModel = function (p, result) {
 
 User.disConnectUser=function(callback,socket_id){
   const sql = "UPDATE users SET is_active ='no',socket_id='' WHERE socket_id='"+socket_id+"'";
+  connection.query(sql, function (err, res) {
+    if (err){
+      throw err;
+    }else{
+      return callback(null, res);
+    }
+  });
+}
+
+User.updateMessage = function(callback,postData){
+  const sql = "UPDATE private_chat SET message ='"+postData.message+"' WHERE message='"+postData.edit_message+"' AND from_user_id='"+postData.from_user_id+"' AND to_user_id='"+postData.to_user_id+"'";
+  //console.log("Update message",sql);
   connection.query(sql, function (err, res) {
     if (err){
       throw err;
