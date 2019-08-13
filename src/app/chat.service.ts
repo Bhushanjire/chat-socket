@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import * as io from 'socket.io-client';
 import { Observable } from 'rxjs/Observable';
 
+
 const url = 'http://localhost:3000';
 
 @Injectable({
@@ -18,7 +19,7 @@ export class ChatService {
   socketID;
 
   constructor(private httpclient: HttpClient) {
-    this.initConnection();
+   this.initConnection();
   }
   public getAllUsers() {
     let postData = {
@@ -46,14 +47,10 @@ export class ChatService {
       this.getUpdatedUsers();
       this.isLoggedIn.next(true);
     });
+    console.log('initConnection called');
   }
 
-  public signupService(data) {
-    return this.httpclient.post(this.APIPATH + "createUser", data).pipe(map((res: any) => res));
-  }
-  public signinService(data) {
-    return this.httpclient.post(this.APIPATH + "login", data).pipe(map((res: any) => res));
-  }
+ 
   public getUserService() {
     return this.httpclient.get(this.APIPATH + "userList").pipe(map((res: any) => res));
   }

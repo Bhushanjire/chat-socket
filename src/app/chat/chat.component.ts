@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild,AfterViewInit,ElementRef } from '@angular/core';
 import { ChatService } from '../chat.service';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ForwordMsgModelComponent } from '../forword-msg-model/forword-msg-model.component';
+import { ZoomImageComponent } from '../zoom-image/zoom-image.component';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit,AfterViewInit {
   chatForm: FormGroup;
   userList = [];
   messages: any;
@@ -39,8 +40,16 @@ export class ChatComponent implements OnInit {
   paperclip = true;
   times = false;
   closeResult: string;
-  constructor(private chatService: ChatService, private route: Router) { }
+  zoomImageURL: string;
+  
+  
+ @ViewChild(ZoomImageComponent,{static:true}) zoomimagecomponent : ZoomImageComponent;
+ @ViewChild('zoomImageModel',{static: false}) zoomImageModel: ElementRef;
+  constructor(private chatService: ChatService, private route: Router,private modalService: NgbModal) { }
   // ,private modalService: NgbModal
+  ngAfterViewInit() {
+    
+  }
 
   ngOnInit() {
     this.loginUser = localStorage.getItem('user_id');
@@ -158,8 +167,8 @@ export class ChatComponent implements OnInit {
       "edit_message": "",
     });
     this.showEmojiPicker = false;
-    this.paperclip=true;
-    this.times=false;
+    this.paperclip = true;
+    this.times = false;
   }
 
   blockUser(block_user_id, blockType) {
@@ -211,7 +220,7 @@ export class ChatComponent implements OnInit {
       "added_date_time": new Date()
     };
     this.chatService.sendMessageService(sendData);
-    console.log("File Change",  event);
+    console.log("File Change", event);
   }
 
   logout() {
@@ -243,8 +252,8 @@ export class ChatComponent implements OnInit {
     const editMsg = this.messages.filter(function (obj) {
       return obj.chat_id == chat_id;
     });
-this.paperclip=false;
-this.times=true;
+    this.paperclip = false;
+    this.times = true;
 
     this.chatForm.patchValue({
       "message": editMsg[0].message,
@@ -263,7 +272,8 @@ this.times=true;
   }
 
   forwordMsg(chat_id) {
-
+    const modalRef = this.modalService.open(ForwordMsgModelComponent);
+    modalRef.componentInstance.name = 'World';
   }
   removeMsg(chat_id) {
     let confirmRes = confirm("Are you sure you want to remove this message?");
@@ -277,17 +287,25 @@ this.times=true;
       return false;
     }
   }
-  paperclip_times(){
-    this.paperclip=true;
-    this.times=false;
+  paperclip_times() {
+    this.paperclip = true;
+    this.times = false;
     this.chatForm.patchValue({
-      "message" : '',
+      "message": '',
       "chat_id": 0,
       "edit_message": ''
     })
   }
 
-  likeMsg(){
+  zoomImage(url) {
+    this.zoomImageURL = url;
+    this.zoomImageModel.nativeElement.style.display="block";
+  }
+
+  closeImage() {
+    this.zoomImageModel.nativeElement.style.display="none";
+  }
+  likeMsg() {
     console.log("like called");
   }
 

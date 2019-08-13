@@ -1,4 +1,5 @@
 const connection = require('../Config/db'); //reference of db.js
+var jwt = require('jsonwebtoken');
 
 const User = function (task) {
 };
@@ -11,8 +12,24 @@ User.createUserModel = function (p, result) {
   });
 }
 
-User.getAllUser = function (callback, postData) {
+User.loginModel = function (p, result) {
+  const sql = "SELECT * FROM users WHERE username='" + p.username + "' AND password='" + p.password + "'";
+  connection.query(sql, function (err, res) {
+    if(err){
+      return  result(err, null) ;
+    }else{
+      const token = jwt.sign({'user_id':res[0].user_id}, 'bhushan');
+      //console.log("Encoded",token);
+      res[0].token = token
+      var decoded = jwt.verify(token, 'bhushan');
+      //console.log("Decoded",decoded); 
+      return result(null, res);
+    }
+    
+  });
+}
 
+User.getAllUser = function (callback, postData) {
   if (postData.conversation_id) {
     postData.from_user_id = postData.conversation_id;
   }
@@ -25,7 +42,7 @@ User.getAllUser = function (callback, postData) {
 
 User.getChatMessages = function (callback, postData) {
   const sql = "SELECT * FROM private_chat WHERE ((to_user_id='" + postData.from_user_id + "' AND from_user_id='" + postData.to_user_id + "') OR (to_user_id='" + postData.to_user_id + "' AND from_user_id='" + postData.from_user_id + "')) AND conversation_id='" + postData.conversation_id + "' AND is_block='no'";
- // console.log("Chatting List",sql);
+  // console.log("Chatting List",sql);
   connection.query(sql, function (err, chatList) {
     return err ? callback(err, null) : callback(null, chatList);
   });
@@ -47,7 +64,7 @@ User.updateMessageAsRead = function (callback, postData) {
 }
 
 User.deleteUser = function (callback, postData) {
-  const sql = "DELETE FROM online_users WHERE user_id='" + postData.user_id + "'";
+  const sql = "UPDATE users SET is_active ='no',socket_id='' WHERE socket_id='" + postData.user_id + "'";
   connection.query(sql, function (err, chatList) {
     return err ? callback(err, null) : callback(null, chatList);
   });
@@ -55,7 +72,7 @@ User.deleteUser = function (callback, postData) {
 
 User.clearChat = function (callback, postData) {
   const sql = "DELETE FROM private_chat WHERE ((to_user_id='" + postData.from_user_id + "' and from_user_id='" + postData.to_user_id + "') OR (to_user_id='" + postData.to_user_id + "' AND from_user_id='" + postData.from_user_id + "')) AND conversation_id='" + postData.from_user_id + "'";
- // console.log("Clear Chat",sql);
+  // console.log("Clear Chat",sql);
   connection.query(sql, function (err, chatList) {
     return err ? callback(err, null) : callback(null, chatList);
   });
@@ -64,7 +81,7 @@ User.clearChat = function (callback, postData) {
 User.blockUser = function (callback, postData) {
   if (postData.blockType == 'Block') {
     const sql = "INSERT IGNORE INTO block_user_list(from_user_id,to_user_id) VALUES('" + postData.from_user_id + "','" + postData.to_user_id + "')";
-   // console.log("Block User",sql);
+    // console.log("Block User",sql);
     connection.query(sql, function (err, chatList) {
       return err ? callback(err, null) : callback(null, chatList);
     });
@@ -76,54 +93,47 @@ User.blockUser = function (callback, postData) {
   }
 }
 
-User.checkUserBlock = function(callback,postData){
+User.checkUserBlock = function (callback, postData) {
   const sql = "SELECT * FROM block_user_list WHERE from_user_id='" + postData.to_user_id + "' AND to_user_id='" + postData.from_user_id + "'";
   //console.log("Check block user",sql);
-  connection.query(sql, function (err, res,fields) {
+  connection.query(sql, function (err, res, fields) {
     return err ? callback(err, null) : callback(null, res);
   });
 }
 
 
-User.getSocketID = function(callback,postData){
-  const sql = "SELECT user_id,socket_id FROM users WHERE user_id IN('"+postData.to_user_id+"','"+postData.from_user_id+"')";
+User.getSocketID = function (callback, postData) {
+  const sql = "SELECT user_id,socket_id FROM users WHERE user_id IN('" + postData.to_user_id + "','" + postData.from_user_id + "')";
   //console.log("User Details",sql);
-  connection.query(sql, function (err, res,fields) {
-    if(err) {
+  connection.query(sql, function (err, res, fields) {
+    if (err) {
       throw err;
-    }else{
+    } else {
       return callback(null, res);
-    } 
+    }
   });
 }
 
-User.getSingleSocketID=function(callback,postData){
-  const sql = "SELECT user_id,socket_id FROM users WHERE user_id IN('"+postData.from_user_id+"')";
-  connection.query(sql, function (err, res,fields) {
-    if(err) {
+User.getSingleSocketID = function (callback, postData) {
+  const sql = "SELECT user_id,socket_id FROM users WHERE user_id IN('" + postData.from_user_id + "')";
+  connection.query(sql, function (err, res, fields) {
+    if (err) {
       throw err;
-    }else{
+    } else {
       return callback(null, res);
-    } 
+    }
   });
 }
 
-User.loginModel = function (p, result) {
-  const sql = "SELECT * FROM users WHERE username='" + p.username + "' AND password='" + p.password + "'";
-  connection.query(sql, function (err, res) {
-    return err ? result(err, null) : result(null, res);
-  });
-}
-
-User.updateSocketID = function(callback,postData){
+User.updateSocketID = function (callback, postData) {
   const date = new Date();
-  const last_login = date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
-  const sql = "UPDATE users SET socket_id ='"+postData.socket_id+"',is_active='yes',last_login='"+last_login+"' WHERE user_id='"+postData.user_id+"'";
-  //console.log("Update SocketID",sql);
+  const last_login = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+  const sql = "UPDATE users SET socket_id ='" + postData.socket_id + "',is_active='yes',last_login='" + last_login + "' WHERE user_id='" + postData.user_id + "'";
+  console.log("Update SocketID",sql);
   connection.query(sql, function (err, res) {
-    if (err){
+    if (err) {
       throw err;
-    }else{
+    } else {
       return callback(null, res);
     }
   });
@@ -136,37 +146,37 @@ User.addSocketIdModel = function (p, result) {
   });
 }
 
-User.disConnectUser=function(callback,socket_id){
-  const sql = "UPDATE users SET is_active ='no',socket_id='' WHERE socket_id='"+socket_id+"'";
+User.disConnectUser = function (callback, socket_id) {
+  const sql = "UPDATE users SET is_active ='no',socket_id='' WHERE socket_id='" + socket_id + "'";
   connection.query(sql, function (err, res) {
-    if (err){
+    if (err) {
       throw err;
-    }else{
+    } else {
       return callback(null, res);
     }
   });
 }
 
-User.updateMessage = function(callback,postData){
-  const sql = "UPDATE private_chat SET message ='"+postData.message+"' WHERE message='"+postData.edit_message+"' AND from_user_id='"+postData.from_user_id+"' AND to_user_id='"+postData.to_user_id+"'";
+User.updateMessage = function (callback, postData) {
+  const sql = "UPDATE private_chat SET message ='" + postData.message + "' WHERE message='" + postData.edit_message + "' AND from_user_id='" + postData.from_user_id + "' AND to_user_id='" + postData.to_user_id + "'";
   //console.log("Update message",sql);
   connection.query(sql, function (err, res) {
-    if (err){
+    if (err) {
       throw err;
-    }else{
+    } else {
       return callback(null, res);
     }
   });
 }
 
-User.deleteMessage =function(callback,postData){
-  const sql = "DELETE FROM private_chat WHERE chat_id = '"+postData.chat_id+"'";
- // console.log("Delete msg query=>",sql);
-  connection.query(sql,function(err,res){
-    if(err){
+User.deleteMessage = function (callback, postData) {
+  const sql = "DELETE FROM private_chat WHERE chat_id = '" + postData.chat_id + "'";
+  // console.log("Delete msg query=>",sql);
+  connection.query(sql, function (err, res) {
+    if (err) {
       throw err;
-    }else{
-      return callback(null,res);
+    } else {
+      return callback(null, res);
     }
   });
 }

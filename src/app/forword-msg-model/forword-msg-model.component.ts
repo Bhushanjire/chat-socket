@@ -1,5 +1,6 @@
 import { Component, OnInit,Input } from '@angular/core';
 import { NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
+import { ChatService } from '../chat.service';
 
 
 
@@ -10,7 +11,7 @@ import { NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 })
 export class ForwordMsgModelComponent implements OnInit {
   @Input() name;
-  constructor(public activeModal: NgbActiveModal) {}
+  constructor(public activeModal: NgbActiveModal,private chatService: ChatService) {}
 
   ngOnInit() {
   }

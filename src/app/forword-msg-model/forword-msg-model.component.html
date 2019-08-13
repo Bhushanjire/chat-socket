@@ -1,12 +1,32 @@
 <div class="modal-header">
-        <h4 class="modal-title">Hi there!</h4>
-        <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>Hello, {{name}}!</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>
-      </div>
+  <h4 class="modal-title">Forword Messages</h4>
+  <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+
+<div class="modal-body forword-messageRow">
+  
+    <ul class="list-group">
+        <li class="list-group-item">Forword message</li>
+        <li class="list-group-item"><input type="text" placeholder="Type a message here (optional)" class="forwordInput"></li>
+      </ul>
+    
+        <ul class="list-group">
+          <li class="list-group-item">
+              <input type="text" placeholder="Search contacts" class="forwordInput">
+          </li>
+            
+        </ul>
+
+    <ul class="list-group">
+        <li class="list-group-item">First item <span class="badge badge-pill badge-primary text-right">Send</span></li>
+        <li class="list-group-item">Second item</li>
+        <li class="list-group-item">Third item</li>
+      </ul>
+ 
+  
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>
+</div>

@@ -24,6 +24,9 @@ import { ClipboardModule } from 'ngx-clipboard';
 import { ChatService } from './chat.service';
 import { ForwordMsgModelComponent } from './forword-msg-model/forword-msg-model.component';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import { ZoomImageComponent } from './zoom-image/zoom-image.component';
+import { AuthService } from './auth.service';
+import { AuthGuard } from './auth.guard';
 
 @NgModule({
   declarations: [
@@ -34,7 +37,8 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
     EscapeHtmlPipe,
     EscapeCssPipe,
     SearchPipe,
-    ForwordMsgModelComponent
+    ForwordMsgModelComponent,
+    ZoomImageComponent
   ],
   imports: [
     BrowserModule,
@@ -47,7 +51,7 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
     ClipboardModule,
     NgbModule
   ],
-  providers: [ChatService],
+  providers: [ChatService,AuthService,AuthGuard],
   bootstrap: [AppComponent],
   entryComponents: [ForwordMsgModelComponent],
 })

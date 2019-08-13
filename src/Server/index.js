@@ -42,6 +42,7 @@ const port = process.env.PORT || 3000;
 io.on('connection', (socket) => {
    // console.log("Socket ID=>>>>",socket);
    socket.on("addSocketID", (postData) => {
+      postData.socket_id = socket.id;
       userModel.updateSocketID(function (err, res) {
          socket.user_id = postData.user_id;
       }, postData);
@@ -86,7 +87,7 @@ io.on('connection', (socket) => {
    });
 
    function sendMessage(postData) {
-      console.log(postData);
+     // console.log(postData);
       if (postData.chat_id > 0) {
          userModel.updateMessage(function (err, res) {
             if(err){

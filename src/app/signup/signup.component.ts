@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import {ChatService} from '../chat.service';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import {Router} from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -10,8 +10,7 @@ import {Router} from '@angular/router';
 })
 export class SignupComponent implements OnInit {
   signupForm : FormGroup;
-  constructor(private chatservice : ChatService,private router : Router) { }
-
+  constructor(private auth: AuthService,private router : Router) { }
   ngOnInit() {
     this.signupForm = new FormGroup({
       'name': new FormControl(null, Validators.required),
@@ -20,7 +19,7 @@ export class SignupComponent implements OnInit {
     });
   }
   signup(data){
-    this.chatservice.signupService(data.value).subscribe(responce=>{
+    this.auth.signupService(data.value).subscribe(responce=>{
       if(responce.success==true){
           localStorage.setItem("user_id",responce.user_id);
           this.router.navigate(['/chat']);

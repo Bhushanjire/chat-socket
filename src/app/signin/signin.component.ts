@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import {ChatService} from '../chat.service';
 import {Router} from '@angular/router';
+import { AuthService } from '../auth.service';
+import * as jwt_decode from 'jwt-decode';
 
 @Component({
   selector: 'app-signin',
@@ -10,7 +11,7 @@ import {Router} from '@angular/router';
 })
 export class SigninComponent implements OnInit {
   signinForm : FormGroup;
-  constructor(private chatService : ChatService,private route : Router) { }
+  constructor(private route : Router,private auth: AuthService) { }
 
   ngOnInit() {
     this.signinForm = new FormGroup({
@@ -20,11 +21,15 @@ export class SigninComponent implements OnInit {
   }
 
   signin(data){
-    this.chatService.signinService(data.value).subscribe(responce=>{
+    this.auth.signinService(data.value).subscribe(responce=>{
+     // console.log("SignIn Responce",responce);
+
       if(responce.success==true){   
         localStorage.setItem('user_id',responce.data[0].user_id);
         localStorage.setItem('user_name',responce.data[0].name);
         localStorage.setItem('profile_picture',responce.data[0].profile_picture);
+        this.auth.initSocket(responce.data[0].user_id);
+       // this.chatService.initConnection();
         this.route.navigate(['chat']);
       }else{
 

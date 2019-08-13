@@ -69,9 +69,10 @@
             <div class="row chatMessage">
                 <div class="col-md-12">
                     <div *ngFor="let ChatMessages of messages"
-                        [ngClass]="ChatMessages.from_user_id==loginUser ? 'from-message': 'to-message'"
+                        [ngClass]="ChatMessages.from_user_id==loginUser? 'from-message': 'to-message'"
                         (contextmenu)="onRightClick(ChatMessages.single_chat_id)" [ngSwitch]="ChatMessages.message_type"
-                        (mouseover)="actionOnMsg(ChatMessages.chat_id)" (mouseout)="actionOnMsg(0)" (dblclick)="likeMsg()">
+                        (mouseover)="actionOnMsg(ChatMessages.chat_id)" (mouseout)="actionOnMsg(0)"
+                        (dblclick)="likeMsg()">
                         <span *ngSwitchCase="'text'">
                             {{ChatMessages.message}}
                         </span>
@@ -82,7 +83,8 @@
                             </video>
                         </span>
                         <span *ngSwitchCase="'image'">
-                            <img src="{{ChatMessages.message}}" width="50" height="50" id="myImg">
+                            <img src="{{ChatMessages.message}}" width="50" height="50" id="myImg"
+                                (click)="zoomImage(ChatMessages.message)">
                         </span>
 
                         <span
@@ -127,16 +129,17 @@
                             </span>
                         </span>
 
-                       <!-- <span style="float: right">
+                        <!-- <span style="float: right">
                             <i class="fa fa-heart heart-like" aria-hidden="true" ></i>
                        </span> -->
-                        
+
                         <span style="float: right">
                             <div class="dropdown">
                                 <i class="fa fa-ellipsis-v handCursor" data-toggle="dropdown" aria-hidden="true"
                                     style="color: white"></i>
                                 <div class="dropdown-menu dropdown-menu-left">
-                                    <div class="dropdown-item handCursor" (click)="editMsg(ChatMessages.chat_id)" *ngIf="ChatMessages.from_user_id==loginUser">
+                                    <div class="dropdown-item handCursor" (click)="editMsg(ChatMessages.chat_id)"
+                                        *ngIf="ChatMessages.from_user_id==loginUser">
                                         Edit</div>
                                     <div class="dropdown-item handCursor" ngxClipboard
                                         [cbContent]="ChatMessages.message"
@@ -182,8 +185,9 @@
                                         <i class="fa fa-times handCursor" aria-hidden="true" title="Cancel edit"></i>
                                     </span>
                                 </div>
-                                
-                                <span class="clipboard" *ngIf="clipboard" (click)="clipboard=false">Copy to clipboard</span>
+
+                                <span class="clipboard" *ngIf="clipboard" (click)="clipboard=false">Copy to
+                                    clipboard</span>
                             </div>
                             <div class="col-md-4"><button type="submit" class="btn btn-primary"
                                     [disabled]="chatForm.invalid">Send</button></div>
@@ -193,4 +197,9 @@
             </div>
         </div>
     </div>
+</div>
+<div id="zoomImageModel" class="modal" #zoomImageModel>
+    <span class="close" (click)="closeImage()">&times;</span>
+    <img class="modal-content" [src]="zoomImageURL" id="img01">
+    <div id="caption"></div>
 </div>
