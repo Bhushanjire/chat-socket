@@ -7,22 +7,29 @@
 
 <div class="modal-body forword-messageRow">
   
-    <ul class="list-group">
-        <li class="list-group-item">Forword message</li>
-        <li class="list-group-item"><input type="text" placeholder="Type a message here (optional)" class="forwordInput"></li>
+    <ul class="list-group forword-message">
+        <li class="list-group-item">{{chatData.message}}</li>
+        <li class="list-group-item"><input type="text" placeholder="Type a message here (optional)" class="forwordInput" name="optionalMsg" #optionalMsg  id="optionalMsg"></li>
       </ul>
     
         <ul class="list-group">
           <li class="list-group-item">
-              <input type="text" placeholder="Search contacts" class="forwordInput">
+              <input type="text" placeholder="Search contacts" class="forwordInput"  [(ngModel)]="searchText" >
           </li>
             
         </ul>
 
-    <ul class="list-group">
-        <li class="list-group-item">First item <span class="badge badge-pill badge-primary text-right">Send</span></li>
-        <li class="list-group-item">Second item</li>
-        <li class="list-group-item">Third item</li>
+    <ul class="list-group user-list-ul">
+      <ng-container *ngFor="let userData of userList |  searchData :searchText">
+        <li *ngIf="loginUser!=userData.user_id" class="list-group-item" >
+          {{userData.name}} 
+          <span 
+          class="badge badge-pill btn-send"  
+          id="userData.user_id"  
+          (click)="sendForwordMessage(chatData,userData,optionalMsg.value)" 
+          [ngClass]="userData.is_send=='no'? 'badge-primary handCursor' : 'badge-secondary disabled-send-btn'">Send</span>
+        </li>
+      </ng-container>
       </ul>
  
   

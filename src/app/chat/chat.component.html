@@ -7,6 +7,11 @@
             Welcome , {{loginUsername}} <button type="button" class="btn btn-primary" (click)="logout()">Logout</button>
         </div>
     </div>
+    <div class="row mb-3">
+        <div class="col-md-12 text-right">
+                <button type="button" class="btn btn-primary" (click)="openCreateGroupModel()">Create Group</button>
+        </div>
+    </div>
     <div class="row text-center" *ngIf="noOnlineUser">
         <div class="col-md-12">
             <a class="btn btn-info">
@@ -68,91 +73,99 @@
             </div>
             <div class="row chatMessage">
                 <div class="col-md-12">
-                    <div *ngFor="let ChatMessages of messages"
-                        [ngClass]="ChatMessages.from_user_id==loginUser? 'from-message': 'to-message'"
-                        (contextmenu)="onRightClick(ChatMessages.single_chat_id)" [ngSwitch]="ChatMessages.message_type"
-                        (mouseover)="actionOnMsg(ChatMessages.chat_id)" (mouseout)="actionOnMsg(0)"
-                        (dblclick)="likeMsg()">
-                        <span *ngSwitchCase="'text'">
-                            {{ChatMessages.message}}
-                        </span>
-                        <span *ngSwitchCase="'video'">
-                            <video controls #videoPlayer width="100" height="100">
-                                <source src="{{ChatMessages.message}}" type="video/mp4" />
-                                Browser not supported
-                            </video>
-                        </span>
-                        <span *ngSwitchCase="'image'">
-                            <img src="{{ChatMessages.message}}" width="50" height="50" id="myImg"
-                                (click)="zoomImage(ChatMessages.message)">
-                        </span>
-
-                        <span
-                            class="text-muted"><small>{{ChatMessages.added_date_time | date : 'dd-MMM-yy h:mm a'}}</small></span>
-                        &nbsp;
-                        <span *ngIf="ChatMessages.from_user_id==loginUser">
-                            <span *ngIf="ChatMessages.is_read=='no'">
-                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="12" height="12"
-                                    viewBox="0 0 226 226" style=" fill:#000000;">
-                                    <g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1"
-                                        stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
-                                        stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none"
-                                        font-size="none" text-anchor="none" style="mix-blend-mode: normal">
-                                        <path d="M0,226v-226h226v226z" fill="none"></path>
-                                        <g fill="#808080">
-                                            <g id="surface1">
-                                                <path
-                                                    d="M58.76,189.84c-2.38359,0 -4.69656,-0.95344 -6.39156,-2.64844l-49.72,-49.72c-3.53125,-3.53125 -3.53125,-9.25187 0,-12.78312c3.53125,-3.53125 9.25187,-3.53125 12.78312,0l42.69281,42.69281l102.15906,-123.41719c3.17812,-3.86672 8.88109,-4.39641 12.7125,-1.20063c3.84906,3.17813 4.39641,8.88109 1.20063,12.7125l-108.48,131.08c-1.60672,1.9775 -3.99031,3.16047 -6.53281,3.26641c-0.14125,0.01766 -0.2825,0.01766 -0.42375,0.01766zM108.90375,189.82234c2.5425,-0.10594 4.90844,-1.28891 6.53281,-3.26641l108.48,-131.08c3.19578,-3.83141 2.64844,-9.53437 -1.20063,-12.7125c-3.83141,-3.19578 -9.53437,-2.64844 -12.7125,1.20063l-102.15906,123.41719l-2.01281,-2.01281c-3.53125,-3.53125 -9.25187,-3.53125 -12.78312,0c-3.53125,3.53125 -3.53125,9.25188 0,12.78313l9.04,9.04c1.695,1.695 4.00797,2.64844 6.39156,2.64844c0.14125,0 0.2825,0 0.42375,-0.01766z">
-                                                </path>
-                                            </g>
-                                        </g>
-                                    </g>
-                                </svg>
-                            </span>
-                            <span *ngIf="ChatMessages.is_read=='yes'">
-                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="12" height="12"
-                                    viewBox="0 0 226 226" style=" fill:#000000;">
-                                    <g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1"
-                                        stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
-                                        stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none"
-                                        font-size="none" text-anchor="none" style="mix-blend-mode: normal">
-                                        <path d="M0,226v-226h226v226z" fill="none"></path>
-                                        <g fill="#189ee9">
-                                            <g id="surface1">
-                                                <path
-                                                    d="M58.76,189.84c-2.38359,0 -4.69656,-0.95344 -6.39156,-2.64844l-49.72,-49.72c-3.53125,-3.53125 -3.53125,-9.25187 0,-12.78312c3.53125,-3.53125 9.25187,-3.53125 12.78312,0l42.69281,42.69281l102.15906,-123.41719c3.17812,-3.86672 8.88109,-4.39641 12.7125,-1.20063c3.84906,3.17813 4.39641,8.88109 1.20063,12.7125l-108.48,131.08c-1.60672,1.9775 -3.99031,3.16047 -6.53281,3.26641c-0.14125,0.01766 -0.2825,0.01766 -0.42375,0.01766zM108.90375,189.82234c2.5425,-0.10594 4.90844,-1.28891 6.53281,-3.26641l108.48,-131.08c3.19578,-3.83141 2.64844,-9.53437 -1.20063,-12.7125c-3.83141,-3.19578 -9.53437,-2.64844 -12.7125,1.20063l-102.15906,123.41719l-2.01281,-2.01281c-3.53125,-3.53125 -9.25187,-3.53125 -12.78312,0c-3.53125,3.53125 -3.53125,9.25188 0,12.78313l9.04,9.04c1.695,1.695 4.00797,2.64844 6.39156,2.64844c0.14125,0 0.2825,0 0.42375,-0.01766z">
-                                                </path>
-                                            </g>
-                                        </g>
-                                    </g>
-                                </svg>
-                            </span>
-                        </span>
-
-                        <!-- <span style="float: right">
-                            <i class="fa fa-heart heart-like" aria-hidden="true" ></i>
-                       </span> -->
-
-                        <span style="float: right">
-                            <div class="dropdown">
-                                <i class="fa fa-ellipsis-v handCursor" data-toggle="dropdown" aria-hidden="true"
-                                    style="color: white"></i>
-                                <div class="dropdown-menu dropdown-menu-left">
-                                    <div class="dropdown-item handCursor" (click)="editMsg(ChatMessages.chat_id)"
-                                        *ngIf="ChatMessages.from_user_id==loginUser">
-                                        Edit</div>
-                                    <div class="dropdown-item handCursor" ngxClipboard
-                                        [cbContent]="ChatMessages.message"
-                                        (cbOnSuccess)="copyMsg($event,ChatMessages.chat_id)">
-                                        Copy</div>
-                                    <div class="dropdown-item handCursor" (click)="forwordMsg(ChatMessages.chat_id)">
-                                        Forword</div>
-                                    <div class="dropdown-item handCursor" (click)="removeMsg(ChatMessages.chat_id)">
-                                        Remove</div>
-                                </div>
+                    <ng-container *ngFor="let ChatMessages of messages" [ngSwitch]="ChatMessages.message_type">
+                        <div [ngClass]="ChatMessages.from_user_id==loginUser? 'from-message': 'to-message'"
+                            (contextmenu)="onRightClick(ChatMessages.single_chat_id)"
+                            (mouseover)="actionOnMsg(ChatMessages.chat_id)" (mouseout)="actionOnMsg(0)"
+                            (dblclick)="likeMsg()">
+                            <div *ngIf="ChatMessages.is_forwarded=='yes'" class="text-muted forword-message">
+                                <i class="fas fa-paper-plane"></i> forwarded
                             </div>
-                        </span>
-                    </div>
+                            <span *ngSwitchCase="'text'" [innerHTML]="ChatMessages.message">
+
+                            </span>
+                            <span *ngSwitchCase="'video'">
+                                <video controls #videoPlayer width="100" height="100">
+                                    <source src="{{ChatMessages.message}}" type="video/mp4" />
+                                    Browser not supported
+                                </video>
+                            </span>
+                            <span *ngSwitchCase="'image'">
+                                <img src="{{ChatMessages.message}}" width="70" height="70" id="myImg"
+                                    (click)="zoomImage(ChatMessages.message)" class="rounded">
+                            </span>
+
+                            <span
+                                class="text-muted"><sub>&nbsp;{{ChatMessages.added_date_time | date : 'dd-MMM-yy h:mm a'}}</sub></span>
+                            &nbsp;
+                            <!-- <i class="fa fa-check" aria-hidden="true" style="color: #189ee9;size: 8px" ></i> -->
+                            <span *ngIf="ChatMessages.from_user_id==loginUser">
+                                <span *ngIf="ChatMessages.is_read=='no'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="12" height="12"
+                                        viewBox="0 0 226 226" style=" fill:#000000;">
+                                        <g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1"
+                                            stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
+                                            stroke-dasharray="" stroke-dashoffset="0" font-family="none"
+                                            font-weight="none" font-size="none" text-anchor="none"
+                                            style="mix-blend-mode: normal">
+                                            <path d="M0,226v-226h226v226z" fill="none"></path>
+                                            <g fill="#808080">
+                                                <g id="surface1">
+                                                    <path
+                                                        d="M58.76,189.84c-2.38359,0 -4.69656,-0.95344 -6.39156,-2.64844l-49.72,-49.72c-3.53125,-3.53125 -3.53125,-9.25187 0,-12.78312c3.53125,-3.53125 9.25187,-3.53125 12.78312,0l42.69281,42.69281l102.15906,-123.41719c3.17812,-3.86672 8.88109,-4.39641 12.7125,-1.20063c3.84906,3.17813 4.39641,8.88109 1.20063,12.7125l-108.48,131.08c-1.60672,1.9775 -3.99031,3.16047 -6.53281,3.26641c-0.14125,0.01766 -0.2825,0.01766 -0.42375,0.01766zM108.90375,189.82234c2.5425,-0.10594 4.90844,-1.28891 6.53281,-3.26641l108.48,-131.08c3.19578,-3.83141 2.64844,-9.53437 -1.20063,-12.7125c-3.83141,-3.19578 -9.53437,-2.64844 -12.7125,1.20063l-102.15906,123.41719l-2.01281,-2.01281c-3.53125,-3.53125 -9.25187,-3.53125 -12.78312,0c-3.53125,3.53125 -3.53125,9.25188 0,12.78313l9.04,9.04c1.695,1.695 4.00797,2.64844 6.39156,2.64844c0.14125,0 0.2825,0 0.42375,-0.01766z">
+                                                    </path>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </svg>
+                                </span>
+                                <span *ngIf="ChatMessages.is_read=='yes'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="12" height="12"
+                                        viewBox="0 0 226 226" style=" fill:#000000;">
+                                        <g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1"
+                                            stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
+                                            stroke-dasharray="" stroke-dashoffset="0" font-family="none"
+                                            font-weight="none" font-size="none" text-anchor="none"
+                                            style="mix-blend-mode: normal">
+                                            <path d="M0,226v-226h226v226z" fill="none"></path>
+                                            <g fill="#189ee9">
+                                                <g id="surface1">
+                                                    <path
+                                                        d="M58.76,189.84c-2.38359,0 -4.69656,-0.95344 -6.39156,-2.64844l-49.72,-49.72c-3.53125,-3.53125 -3.53125,-9.25187 0,-12.78312c3.53125,-3.53125 9.25187,-3.53125 12.78312,0l42.69281,42.69281l102.15906,-123.41719c3.17812,-3.86672 8.88109,-4.39641 12.7125,-1.20063c3.84906,3.17813 4.39641,8.88109 1.20063,12.7125l-108.48,131.08c-1.60672,1.9775 -3.99031,3.16047 -6.53281,3.26641c-0.14125,0.01766 -0.2825,0.01766 -0.42375,0.01766zM108.90375,189.82234c2.5425,-0.10594 4.90844,-1.28891 6.53281,-3.26641l108.48,-131.08c3.19578,-3.83141 2.64844,-9.53437 -1.20063,-12.7125c-3.83141,-3.19578 -9.53437,-2.64844 -12.7125,1.20063l-102.15906,123.41719l-2.01281,-2.01281c-3.53125,-3.53125 -9.25187,-3.53125 -12.78312,0c-3.53125,3.53125 -3.53125,9.25188 0,12.78313l9.04,9.04c1.695,1.695 4.00797,2.64844 6.39156,2.64844c0.14125,0 0.2825,0 0.42375,-0.01766z">
+                                                    </path>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </svg>
+                                </span>
+                            </span>
+
+                            <!-- <span style="float: right">
+                                <i class="fa fa-heart heart-like" aria-hidden="true" ></i>
+                           </span> -->
+
+                            <span style="float: right">
+                                <div class="dropdown">
+                                    <i class="fa fa-ellipsis-v handCursor" data-toggle="dropdown" aria-hidden="true"
+                                        style="color: white"></i>
+                                    <div class="dropdown-menu dropdown-menu-left">
+                                        <div class="dropdown-item handCursor" (click)="editMsg(ChatMessages.chat_id)"
+                                            *ngIf="ChatMessages.from_user_id==loginUser">
+                                            Edit</div>
+                                        <div class="dropdown-item handCursor" ngxClipboard
+                                            [cbContent]="ChatMessages.message"
+                                            (cbOnSuccess)="copyMsg($event,ChatMessages.chat_id)">
+                                            Copy</div>
+                                        <div class="dropdown-item handCursor" (click)="forwordMsg(ChatMessages)">
+                                            Forword</div>
+                                        <div class="dropdown-item handCursor" (click)="removeMsg(ChatMessages.chat_id)">
+                                            Remove</div>
+                                    </div>
+                                </div>
+                            </span>
+                        </div>
+                    </ng-container>
+
                 </div>
             </div>
             <div class="row mt-3" *ngIf="chatFormDiv">

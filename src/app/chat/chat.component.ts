@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ForwordMsgModelComponent } from '../forword-msg-model/forword-msg-model.component';
 import { ZoomImageComponent } from '../zoom-image/zoom-image.component';
+import { CreateGroupModelComponent } from '../create-group-model/create-group-model.component';
 
 @Component({
   selector: 'app-chat',
@@ -109,13 +110,6 @@ export class ChatComponent implements OnInit,AfterViewInit {
       }
     });
   }
-
-  open() {
-    const modalRef = this.modalService.open(ForwordMsgModelComponent);
-    modalRef.componentInstance.name = 'World';
-  }
-
-
   getUser(userData) {
     this.chatFormDiv = true;
     this.selectedUser = userData.name;
@@ -157,7 +151,8 @@ export class ChatComponent implements OnInit,AfterViewInit {
       "added_date_time": new Date(),
       "is_block": data.value.blocked,
       "chat_id": data.value.chat_id,
-      "edit_message": data.value.edit_message
+      "edit_message": data.value.edit_message,
+      "is_forwarded" :"no"
     };
 
     this.chatService.sendMessageService(sendData);
@@ -271,9 +266,10 @@ export class ChatComponent implements OnInit,AfterViewInit {
     }
   }
 
-  forwordMsg(chat_id) {
+  forwordMsg(chatData) {
     const modalRef = this.modalService.open(ForwordMsgModelComponent);
-    modalRef.componentInstance.name = 'World';
+    modalRef.componentInstance.userList = this.userList;
+    modalRef.componentInstance.chatData = chatData;
   }
   removeMsg(chat_id) {
     let confirmRes = confirm("Are you sure you want to remove this message?");
@@ -305,8 +301,10 @@ export class ChatComponent implements OnInit,AfterViewInit {
   closeImage() {
     this.zoomImageModel.nativeElement.style.display="none";
   }
-  likeMsg() {
-    console.log("like called");
+ 
+  openCreateGroupModel(){
+    const createGroupModalRef = this.modalService.open(CreateGroupModelComponent);
+    createGroupModalRef.componentInstance.userList = this.userList;
   }
 
 }

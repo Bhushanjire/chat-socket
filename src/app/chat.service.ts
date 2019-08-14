@@ -17,7 +17,6 @@ export class ChatService {
   updatedUsers = new BehaviorSubject([]);
   socket = io(url);
   socketID;
-
   constructor(private httpclient: HttpClient) {
    this.initConnection();
   }

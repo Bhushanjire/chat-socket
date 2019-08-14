@@ -27,6 +27,9 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { ZoomImageComponent } from './zoom-image/zoom-image.component';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { CreateGroupModelComponent } from './create-group-model/create-group-model.component';
+
 
 @NgModule({
   declarations: [
@@ -38,7 +41,8 @@ import { AuthGuard } from './auth.guard';
     EscapeCssPipe,
     SearchPipe,
     ForwordMsgModelComponent,
-    ZoomImageComponent
+    ZoomImageComponent,
+    CreateGroupModelComponent
   ],
   imports: [
     BrowserModule,
@@ -49,10 +53,11 @@ import { AuthGuard } from './auth.guard';
     PickerModule,
     EmojiModule,
     ClipboardModule,
-    NgbModule
+    NgbModule,
+    FlexLayoutModule
   ],
   providers: [ChatService,AuthService,AuthGuard],
   bootstrap: [AppComponent],
-  entryComponents: [ForwordMsgModelComponent],
+  entryComponents: [ForwordMsgModelComponent,CreateGroupModelComponent],
 })
 export class AppModule { }

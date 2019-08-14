@@ -31,17 +31,6 @@ li {
 }
 
 .from-message{
-    background-color: #f1f1f1;
-    width: 60%;
-    border-radius: 25px;
-    height: auto;
-    padding: 1% 2% 1% 2%;
-    word-wrap: break-word;
-    margin-bottom: 5px;
-    text-align: left;
-    float: left;
-}
-.to-message{
     background-color: #ddd;
     width: 60%;
     border-radius: 25px;
@@ -49,9 +38,69 @@ li {
     padding: 1% 2% 1% 2%;
     word-wrap: break-word;
     margin-bottom: 5px;
-    text-align: right;
+    text-align: left;
     float:right;
 }
+.to-message{
+  background-color: #f1f1f1;
+  width: 60%;
+  border-radius: 25px;
+  height: auto;
+  padding: 1% 2% 1% 2%;
+  word-wrap: break-word;
+  margin-bottom: 5px;
+  text-align: left;
+  float: left;
+}
+
+.from-message-image{
+  //background-color: #ddd;
+  width: 60%;
+  border-radius: 25px;
+  height: auto;
+  padding: 1% 2% 1% 2%;
+  word-wrap: break-word;
+  margin-bottom: 5px;
+  text-align: left;
+  float:right;
+}
+.to-message-image{
+ // background-color: #f1f1f1;
+  width: 60%;
+  border-radius: 25px;
+  height: auto;
+  padding: 1% 2% 1% 2%;
+  word-wrap: break-word;
+  margin-bottom: 5px;
+  text-align: left;
+  float: left;
+}
+
+.from-message-video{
+  //background-color: #ddd;
+  width: 60%;
+  border-radius: 25px;
+  height: auto;
+  padding: 1% 2% 1% 2%;
+  word-wrap: break-word;
+  margin-bottom: 5px;
+  text-align: left;
+  float:right;
+}
+.to-message-video{
+// background-color: #f1f1f1;
+width: 60%;
+border-radius: 25px;
+height: auto;
+padding: 1% 2% 1% 2%;
+word-wrap: break-word;
+margin-bottom: 5px;
+text-align: left;
+float: left;
+}
+
+
+
 .profile-picture{
     width: 5%;
 }
@@ -111,9 +160,7 @@ li {
     left:8px;
     top:12px;
 }
-.handCursor{
-    cursor: pointer;
-}
+
 .inputMsg{
     outline: none !important;
     border: 0px;
@@ -170,7 +217,10 @@ overflow: hidden;
 .contact-list-div:hover {
     overflow-y: scroll;
   }
-
+  
+  .forword-message{
+    font-size: 12px;
+  }
  
 #myImg {
     border-radius: 5px;

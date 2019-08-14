@@ -49,11 +49,24 @@ User.getChatMessages = function (callback, postData) {
 }
 
 User.insertChatMessage = function (callback, postData) {
-  const sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message,message_type,conversation_id,is_block,is_read)VALUES('" + postData.from_user_id + "','" + postData.from_user_name + "','" + postData.to_user_id + "','" + postData.to_user_name + "','" + postData.message + "','" + postData.message_type + "','" + postData.conversation_id + "','" + postData.is_block + "','" + postData.is_read + "')";
-  //console.log("Chat Insert Query=>", sql);
+  const sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message,message_type,conversation_id,is_block,is_read,is_forwarded)VALUES('" + postData.from_user_id + "','" + postData.from_user_name + "','" + postData.to_user_id + "','" + postData.to_user_name + "','" + postData.message + "','" + postData.message_type + "','" + postData.conversation_id + "','" + postData.is_block + "','" + postData.is_read + "','" + postData.is_forwarded + "')";
+  console.log("Chat Insert Query=>", sql);
   connection.query(sql, function (err, chatList) {
     return err ? callback(err, null) : callback(null, chatList.chat_id);
   });
+
+const sql1 = "INSERT INTO messages(message_body,message_type) VALUES('"+postData.message+"','"+postData.message_type+"')";
+connection.query(sql1, function (err, message) {
+   if(err){
+     throw err
+    }else{
+       const query1 = "INSERT INTO chat(message_id,from_user_id,to_user_id) VALUES('"+message.insertId+"','"+postData.from_user_id+"','"+postData.to_user_id+"')";
+       console.log(query1);
+       connection.query(query1, function (err, chatMessage) {
+       // return err ? callback(err, null) : callback(null, chatList.chat_id);
+      });
+    }
+    });
 }
 
 User.updateMessageAsRead = function (callback, postData) {
