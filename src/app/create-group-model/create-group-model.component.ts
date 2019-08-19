@@ -1,6 +1,8 @@
 import { Component, OnInit,Input } from '@angular/core';
 import { NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { ChatService } from '../chat.service';
+
 
 
 @Component({
@@ -11,8 +13,9 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 export class CreateGroupModelComponent implements OnInit {
   @Input() userList;
   createGroupForm :FormGroup;
-  addedUser=[];
-  constructor(public activeModal: NgbActiveModal) { }
+  groupMember=[];
+  postData;
+  constructor(public activeModal: NgbActiveModal,private chatService: ChatService) { }
 
   ngOnInit() {
     for(let i=0;i<this.userList.length;i++){
@@ -25,11 +28,30 @@ export class CreateGroupModelComponent implements OnInit {
   }
 
   createGroup(data){
-
+    this.postData ={
+      "created_by_id" : localStorage.getItem('user_id'),
+      "groupMember" : this.groupMember,
+      "group_name" : data.value.group_name,
+      "group_profile_picture" : data.value.group_profile_picture
+    }
+   
+    this.chatService.createGroupService(this.postData);
+  }
+  seletGroupImage(event){
+    event.preventDefault();
+    let element: HTMLElement = document.getElementById('group_profile_picture') as HTMLElement;
+    element.click();
   }
 
-  addUser(data){
-    this.addedUser.push(data);
+  addGroupMember(event,userData){
+    if(event.target.checked){
+      this.groupMember.push(userData.user_id);
+    }else{
+      var index = this.groupMember.indexOf(210);
+      this.groupMember.splice(index, 1);
+    }
+    
+    console.log("groupMember",this.groupMember);
   }
 
 }

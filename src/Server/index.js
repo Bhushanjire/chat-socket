@@ -87,12 +87,12 @@ io.on('connection', (socket) => {
    });
 
    function sendMessage(postData) {
-     // console.log(postData);
+      // console.log(postData);
       if (postData.chat_id > 0) {
          userModel.updateMessage(function (err, res) {
-            if(err){
+            if (err) {
                return io.emit('error-on-updating message', err);
-            }else{
+            } else {
                userModel.getSocketID(function (err, userDetails) {
                   for (let index = 0; index < userDetails.length; index++) {
                      postData.conversation_id = userDetails[index].user_id;
@@ -262,6 +262,17 @@ io.on('connection', (socket) => {
          }
       }, postData)
 
+   });
+
+   socket.on("createGroup", (postData) => {
+      userModel.createGroup(function (err, res) {
+         if (err) {
+         } else {
+            if(res<1){
+               console.log("Group name already exists");
+            }
+         }
+      }, postData);
    });
 
 

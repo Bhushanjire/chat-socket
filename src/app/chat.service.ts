@@ -120,4 +120,9 @@ export class ChatService {
     }
     this.socket.emit('deleteMessage',postData);
   }
+
+  public createGroupService(postData){
+    console.log("group data",postData);
+      this.socket.emit("createGroup",postData);
+  }
 }

@@ -8,16 +8,24 @@
 <div class="modal-body forword-messageRow">
     <form [formGroup]="createGroupForm" (ngSubmit)="createGroup(createGroupForm)">
         <div class="row mb-3">
-            <div class="col-md-12 text-right">
+            <div class="col-md-6 text-center">
+                <div class="group-image text-center handCursor" (click)="seletGroupImage($event)">
+                    <i class="fa fa-user-circle" aria-hidden="true" style="color: white"></i>
+                </div>
+            </div>
+            <div class="col-md-6 text-right">
                 <button type="submit" class="btn btn-primary" [disabled]=createGroupForm.invalid>Create</button>
             </div>
         </div>
         <div class="row">
             <div class="col-md-6">
-                <input type="text" class="form-control" id="group_name" formControlName="group_name" placeholder="Enter group name" required>
+                <input type="text" class="form-control" id="group_name" formControlName="group_name"
+                    placeholder="Enter group name" required>
             </div>
             <div class="col-md-6">
-                <input type="file" class="form-control" id="group_profile_picture" formControlName="group_profile_picture">
+                <input type="file" class="form-control" id="group_profile_picture"
+                    formControlName="group_profile_picture" style="display: none">
+
             </div>
         </div>
     </form>
@@ -30,9 +38,10 @@
         <ng-container *ngFor="let userData of userList |  searchData :searchText">
             <li *ngIf="loginUser!=userData.user_id" class="list-group-item">
                 {{userData.name}}
-                <span class="badge badge-pill btn-send" id="userData.user_id"
-                    (click)="sendForwordMessage(chatData,userData,optionalMsg.value)"
-                    [ngClass]="userData.is_send=='no'? 'badge-primary handCursor' : 'badge-secondary disabled-send-btn'">Add</span>
+                <span class="btn-send">
+                    <input type="checkbox" id="userData.user_id" (change)="addGroupMember($event,userData)">
+                </span>
+
             </li>
         </ng-container>
     </ul>
@@ -40,5 +49,5 @@
 
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>
+    <!-- <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button> -->
 </div>

@@ -15,17 +15,17 @@ User.createUserModel = function (p, result) {
 User.loginModel = function (p, result) {
   const sql = "SELECT * FROM users WHERE username='" + p.username + "' AND password='" + p.password + "'";
   connection.query(sql, function (err, res) {
-    if(err){
-      return  result(err, null) ;
-    }else{
-      const token = jwt.sign({'user_id':res[0].user_id}, 'bhushan');
+    if (err) {
+      return result(err, null);
+    } else {
+      const token = jwt.sign({ 'user_id': res[0].user_id }, 'bhushan');
       //console.log("Encoded",token);
       res[0].token = token
       var decoded = jwt.verify(token, 'bhushan');
       //console.log("Decoded",decoded); 
       return result(null, res);
     }
-    
+
   });
 }
 
@@ -55,18 +55,18 @@ User.insertChatMessage = function (callback, postData) {
     return err ? callback(err, null) : callback(null, chatList.chat_id);
   });
 
-const sql1 = "INSERT INTO messages(message_body,message_type) VALUES('"+postData.message+"','"+postData.message_type+"')";
-connection.query(sql1, function (err, message) {
-   if(err){
-     throw err
-    }else{
-       const query1 = "INSERT INTO chat(message_id,from_user_id,to_user_id) VALUES('"+message.insertId+"','"+postData.from_user_id+"','"+postData.to_user_id+"')";
-       console.log(query1);
-       connection.query(query1, function (err, chatMessage) {
-       // return err ? callback(err, null) : callback(null, chatList.chat_id);
+  const sql1 = "INSERT INTO messages(message_body,message_type) VALUES('" + postData.message + "','" + postData.message_type + "')";
+  connection.query(sql1, function (err, message) {
+    if (err) {
+      throw err
+    } else {
+      const query1 = "INSERT INTO chat(message_id,from_user_id,to_user_id) VALUES('" + message.insertId + "','" + postData.from_user_id + "','" + postData.to_user_id + "')";
+      console.log(query1);
+      connection.query(query1, function (err, chatMessage) {
+        // return err ? callback(err, null) : callback(null, chatList.chat_id);
       });
     }
-    });
+  });
 }
 
 User.updateMessageAsRead = function (callback, postData) {
@@ -142,7 +142,7 @@ User.updateSocketID = function (callback, postData) {
   const date = new Date();
   const last_login = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
   const sql = "UPDATE users SET socket_id ='" + postData.socket_id + "',is_active='yes',last_login='" + last_login + "' WHERE user_id='" + postData.user_id + "'";
-  console.log("Update SocketID",sql);
+  console.log("Update SocketID", sql);
   connection.query(sql, function (err, res) {
     if (err) {
       throw err;
@@ -190,6 +190,34 @@ User.deleteMessage = function (callback, postData) {
       throw err;
     } else {
       return callback(null, res);
+    }
+  });
+}
+
+User.createGroup = function (callback, postData) {
+
+  const sql1 = "INSERT IGNORE INTO groups(group_name,created_by_id,group_profile_picture) VALUES('" + postData.group_name + "','" + postData.created_by_id + "','" + postData.group_profile_picture + "')";
+  //console.log("sql",sql1);
+  connection.query(sql1, function (err, groupData) {
+    if (err) {
+      throw err;
+    } else {
+
+      if (groupData.insertId <1)
+          return callback(null, groupData.insertId);
+          
+        for (let index = 0; index < postData.groupMember.length; index++) {
+          const sql2 = "INSERT IGNORE INTO group_member(group_id,user_id) VALUES('" + groupData.insertId + "','" + postData.groupMember[index] + "')";
+          //console.log("sql", sql2);
+          connection.query(sql2, function (err, res) {
+            if (err) {
+              throw err;
+            } else {
+              //return callback(null, res);
+            }
+          });
+        }
+      
     }
   });
 }

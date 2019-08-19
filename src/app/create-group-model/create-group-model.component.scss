@@ -5,7 +5,7 @@
 }
 .forword-messageRow{
     margin: 10px;
-    height: 400px;
+    height: 450px;
 }
 .forwordInput{
     width: 100%;
@@ -17,7 +17,7 @@ ul{
 }
 .btn-send{
     float: right;
-    padding: 10px;
+   //padding: 10px;
 }
 .user-list-ul{
     height: 200px;
@@ -28,4 +28,13 @@ ul{
 }
 .disabled-send-btn {
     pointer-events: none;
+  }
+  .group-image{
+      width: 50%;
+      height: 100px;
+      background-color: black;
+      border-radius: 100%;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 100px;
   }
