@@ -33,9 +33,12 @@ User.getAllUser = function (callback, postData) {
   if (postData.conversation_id) {
     postData.from_user_id = postData.conversation_id;
   }
-  const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,U.socket_id,U.is_active,U.last_login,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND  `is_read`='no' AND is_block='no'  AND conversation_id='" + postData.from_user_id + "' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='" + postData.from_user_id + "' AND from_user_id=U.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='" + postData.from_user_id + "' AND to_user_id=U.user_id) AS unblock FROM users U";
-  //console.log("All User",sql);
+  const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,U.socket_id,U.is_active,U.last_login,U.is_group,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND  `is_read`='no' AND is_block='no'  AND conversation_id='" + postData.from_user_id + "' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='" + postData.from_user_id + "' AND from_user_id=U.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='" + postData.from_user_id + "' AND to_user_id=U.user_id) AS unblock FROM users U UNION SELECT g.group_id as user_id,g.group_name as name,g.group_name,g.group_profile_picture as profile_picture,g.socket_id,g.is_active,g.is_deleted,g.is_group,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=u.user_id AND to_user_id='1' AND `is_read`='no' AND is_block='no'  AND conversation_id='1' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='1' AND from_user_id=u.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='1' AND to_user_id=u.user_id) AS unblock from group_member gm join users u on gm.user_id=u.user_id join groups g on g.group_id=gm.group_id WHERE gm.user_id='" + postData.from_user_id + "'";
+  console.log("All User",sql);
   connection.query(sql, function (err, userList) {
+
+
+
     return err ? callback(err, null) : callback(null, userList);
   });
 };
