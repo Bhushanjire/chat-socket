@@ -96,6 +96,7 @@ io.on('connection', (socket) => {
                userModel.getSocketID(function (err, userDetails) {
                   for (let index = 0; index < userDetails.length; index++) {
                      postData.conversation_id = userDetails[index].user_id;
+                    
                      userModel.getChatMessages(function (err, chatList) {
                         if (err) {
                            return io.emit('error-on-getting-chat message', err);

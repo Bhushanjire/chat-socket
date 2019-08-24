@@ -67,7 +67,8 @@ export class ChatComponent implements OnInit,AfterViewInit {
       "attachment": new FormControl(null),
       "blocked": new FormControl(0),
       "chat_id": new FormControl(0),
-      "edit_message": new FormControl()
+      "edit_message": new FormControl(null),
+      "is_group" : new FormControl(null)
     });
 
     this.chatService.getMessages().subscribe((responce: any) => {
@@ -105,6 +106,7 @@ export class ChatComponent implements OnInit,AfterViewInit {
         this.noOnlineUser = true;
       } else {
         this.userList = res;
+        console.log("All users",this.userList);
         this.chatMessageDiv = true;
         this.noOnlineUser = false;
       }
@@ -123,7 +125,7 @@ export class ChatComponent implements OnInit,AfterViewInit {
       "to_user_name": userData.name,
       "socket_id": userData.socket_id,
       "blocked": userData.blocked == null ? 0 : userData.blocked,
-
+      "is_group" : userData.is_group
     });
 
     if (userData.unblock == null) {
@@ -152,7 +154,8 @@ export class ChatComponent implements OnInit,AfterViewInit {
       "is_block": data.value.blocked,
       "chat_id": data.value.chat_id,
       "edit_message": data.value.edit_message,
-      "is_forwarded" :"no"
+      "is_forwarded" :"no",
+      "is_group" : data.value.is_group
     };
 
     this.chatService.sendMessageService(sendData);
@@ -212,7 +215,8 @@ export class ChatComponent implements OnInit,AfterViewInit {
       "from_user_name": localStorage.getItem('user_name'),
       "to_socket_id": this.chatForm.value.socket_id,
       "file_type": this.fileType,
-      "added_date_time": new Date()
+      "added_date_time": new Date(),
+      "is_group" : this.chatForm.value.is_group
     };
     this.chatService.sendMessageService(sendData);
     console.log("File Change", event);

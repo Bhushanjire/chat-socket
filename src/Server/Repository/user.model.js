@@ -33,8 +33,10 @@ User.getAllUser = function (callback, postData) {
   if (postData.conversation_id) {
     postData.from_user_id = postData.conversation_id;
   }
-  const sql = "SELECT U.user_id,U.name,U.username,U.profile_picture,U.socket_id,U.is_active,U.last_login,U.is_group,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND  `is_read`='no' AND is_block='no'  AND conversation_id='" + postData.from_user_id + "' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='" + postData.from_user_id + "' AND from_user_id=U.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='" + postData.from_user_id + "' AND to_user_id=U.user_id) AS unblock FROM users U UNION SELECT g.group_id as user_id,g.group_name as name,g.group_name,g.group_profile_picture as profile_picture,g.socket_id,g.is_active,g.is_deleted,g.is_group,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=u.user_id AND to_user_id='1' AND `is_read`='no' AND is_block='no'  AND conversation_id='1' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='1' AND from_user_id=u.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='1' AND to_user_id=u.user_id) AS unblock from group_member gm join users u on gm.user_id=u.user_id join groups g on g.group_id=gm.group_id WHERE gm.user_id='" + postData.from_user_id + "'";
-  console.log("All User",sql);
+  // const sql = "SELECT U.*,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND  `is_read`='no' AND is_block='no'  AND conversation_id='" + postData.from_user_id + "' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='" + postData.from_user_id + "' AND from_user_id=U.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='" + postData.from_user_id + "' AND to_user_id=U.user_id) AS unblock FROM users U WHERE is_group='no' UNION SELECT u.*,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=u.user_id AND to_user_id='1' AND `is_read`='no' AND is_block='no'  AND conversation_id='1' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='1' AND from_user_id=u.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='1' AND to_user_id=u.user_id) AS unblock from  users u join group_member gm on u.user_id=gm.group WHERE gm.user_id='" + postData.from_user_id + "' AND is_group='yes'";
+  const sql="SELECT U.*,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=U.user_id AND to_user_id='" + postData.from_user_id + "' AND `is_read`='no' AND is_block='no' AND conversation_id='" + postData.from_user_id + "' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='" + postData.from_user_id + "' AND from_user_id=U.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='1' AND to_user_id=U.user_id) AS unblock FROM users U WHERE U.is_group='no' UNION SELECT u.*,(select COUNT(`chat_id`) FROM private_chat WHERE from_user_id=u.user_id AND to_user_id='" + postData.from_user_id + "' AND `is_read`='no' AND is_block='no' AND conversation_id='1' GROUP by to_user_id) AS unread_msg,(SELECT block_id FROM block_user_list WHERE to_user_id='" + postData.from_user_id + "' AND from_user_id=u.user_id) AS blocked,(SELECT block_id FROM block_user_list WHERE from_user_id='" + postData.from_user_id + "' AND to_user_id=u.user_id) AS unblock from users u join group_member gm on u.user_id=gm.group_id  WHERE gm.user_id='" + postData.from_user_id + "' AND u.is_group='yes'";
+  //console.log("All User",sql);
+  
   connection.query(sql, function (err, userList) {
 
 
@@ -52,6 +54,11 @@ User.getChatMessages = function (callback, postData) {
 }
 
 User.insertChatMessage = function (callback, postData) {
+
+  if(postData.is_group=="yes"){
+    postData.to_user_id = postData.conversation_id;
+  }
+
   const sql = "INSERT INTO private_chat(from_user_id,from_user_name,to_user_id,to_user_name,message,message_type,conversation_id,is_block,is_read,is_forwarded)VALUES('" + postData.from_user_id + "','" + postData.from_user_name + "','" + postData.to_user_id + "','" + postData.to_user_name + "','" + postData.message + "','" + postData.message_type + "','" + postData.conversation_id + "','" + postData.is_block + "','" + postData.is_read + "','" + postData.is_forwarded + "')";
   console.log("Chat Insert Query=>", sql);
   connection.query(sql, function (err, chatList) {
@@ -119,7 +126,13 @@ User.checkUserBlock = function (callback, postData) {
 
 
 User.getSocketID = function (callback, postData) {
-  const sql = "SELECT user_id,socket_id FROM users WHERE user_id IN('" + postData.to_user_id + "','" + postData.from_user_id + "')";
+var sql="";
+  if(postData.is_group=="yes"){
+    sql = "SELECT u.user_id,u.socket_id FROM `users` u JOIN group_member gm on u.user_id=gm.user_id WHERE gm.group_id='" + postData.to_user_id + "'";
+  }else{
+    sql = "SELECT user_id,socket_id FROM users WHERE user_id IN('" + postData.to_user_id + "','" + postData.from_user_id + "')";
+  }
+  
   //console.log("User Details",sql);
   connection.query(sql, function (err, res, fields) {
     if (err) {
@@ -199,7 +212,7 @@ User.deleteMessage = function (callback, postData) {
 
 User.createGroup = function (callback, postData) {
 
-  const sql1 = "INSERT IGNORE INTO groups(group_name,created_by_id,group_profile_picture) VALUES('" + postData.group_name + "','" + postData.created_by_id + "','" + postData.group_profile_picture + "')";
+  const sql1 = "INSERT INTO users(name,profile_picture,is_group) VALUES('" + postData.group_name + "','" + postData.group_profile_picture + "','yes')";
   //console.log("sql",sql1);
   connection.query(sql1, function (err, groupData) {
     if (err) {
@@ -221,6 +234,17 @@ User.createGroup = function (callback, postData) {
           });
         }
       
+    }
+  });
+}
+
+User.getGroupUserIds=function(callback,group_id){
+  const sql = "SELECT user_id FROM group_member WHERE group_id='"+group_id+"'";
+  connection.query(sql, function (err, res) {
+    if (err) {
+      throw err;
+    } else {
+      return callback(null,result)
     }
   });
 }
